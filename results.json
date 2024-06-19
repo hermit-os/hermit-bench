@@ -1,0 +1,12 @@
+[
+  {
+    "name": "bench_sleep",
+    "unit": "s",
+    "value": 10.0
+  },
+  {
+    "name": "bench_sleep2",
+    "unit": "s",
+    "value": 20.0
+  }
+]

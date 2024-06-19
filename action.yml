@@ -1,0 +1,33 @@
+name: 'hermit-bench'
+author: 'Carl Wachter'
+description: 'Runs benchmarks on Hermit, which are given in a JSON file'
+branding:
+  icon: activity
+  color: red
+
+inputs:
+  benchmark-file:
+    description: 'Path to the benchmark JSON file'
+    required: true
+
+outputs:
+  result-file:
+    description: 'Path to the result JSON file'
+    value: ${{ steps.run-bench.outputs.results-path }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Build
+      run: |
+        cd ../../_actions/CarlWachter/hermit-bench/main
+        cargo build --package hermit-bench
+        cd ../../../../hermit-rs/hermit-rs
+      shell: bash
+    - name: Run benchmarks
+      id: run-bench
+      run: |
+        cd ../../_actions/CarlWachter/hermit-bench/main
+        cargo run ${{ inputs.benchmark-file }} ../../../../hermit-rs/hermit-rs
+        echo "results-path=./results.json" >> $GITHUB_OUTPUT
+      shell: bash

@@ -18,11 +18,14 @@ fn main() -> io::Result<()> {
     // Get the input file from the command line arguments.
     let args: Vec<String> = env::args().collect();
     let input_file = &args[1];
+    let relative_path = &args[2];
+
+    let input_file = &format!("{}{}", relative_path, input_file);
 
     // Parse the benchmarks from the input file.
     eprintln!("Parsing benchmarks from {input_file}:");
 
-    let benchmarks = parse_benchmarks(input_file).unwrap();
+    let mut benchmarks = parse_benchmarks(input_file).unwrap();
 
     let loaded_benchmarks_str = serde_json::to_string_pretty(&benchmarks).unwrap();
     eprintln!("Loaded benchmarks:");
@@ -32,9 +35,16 @@ fn main() -> io::Result<()> {
     // Run the benchmarks.
 	eprintln!("Running benchmarks:");
 
+    std::process::Command::new("sh")
+        .arg("-c")
+        .arg(format!("cd {relative_path}"));
+
     let mut results: Vec<BenchmarkResult> = Vec::new();
-    for benchmark in &benchmarks {
-        eprintln!("Running benchmark {0}: {1}", benchmark.name, benchmark.command);
+    for benchmark in &mut benchmarks {
+        eprintln!(
+            "Running benchmark {0}: {1}",
+            benchmark.name, benchmark.command
+        );
         let benchmark_result = run_benchmark(benchmark);
 
         // Serialize the results to a JSON string for debugging.

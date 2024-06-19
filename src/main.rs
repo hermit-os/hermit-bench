@@ -1,10 +1,16 @@
-use std::{env, error::Error, f64, fs::File, io::{self, BufReader}};
 use serde::{Deserialize, Serialize};
+use std::{
+    env,
+    error::Error,
+    f64,
+    fs::File,
+    io::{self, BufReader},
+};
 
 #[derive(Serialize)]
 struct BenchmarkResult {
     name: String,
-	unit: String,
+    unit: String,
     value: f64,
 }
 
@@ -29,11 +35,10 @@ fn main() -> io::Result<()> {
 
     let loaded_benchmarks_str = serde_json::to_string_pretty(&benchmarks).unwrap();
     eprintln!("Loaded benchmarks:");
-	eprintln!("{loaded_benchmarks_str}");
-
+    eprintln!("{loaded_benchmarks_str}");
 
     // Run the benchmarks.
-	eprintln!("Running benchmarks:");
+    eprintln!("Running benchmarks:");
 
     std::process::Command::new("sh")
         .arg("-c")
@@ -57,12 +62,12 @@ fn main() -> io::Result<()> {
 
     // Write the results to a file.
     let bench_json_str = serde_json::to_string_pretty(&results).unwrap();
-	eprintln!("{bench_json_str}");
+    eprintln!("{bench_json_str}");
     std::fs::write("results.json", &bench_json_str).unwrap();
 
     eprintln!("Results written to results.json");
 
-	Ok(())
+    Ok(())
 }
 
 fn parse_benchmarks(input_file: &String) -> Result<Vec<Benchmark>, Box<dyn Error>> {
@@ -75,7 +80,7 @@ fn parse_benchmarks(input_file: &String) -> Result<Vec<Benchmark>, Box<dyn Error
     Ok(benchmarks)
 }
 
-fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult>{
+fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
     // Run the benchmark command and return the result.
     let output = std::process::Command::new("sh")
         .arg("-c")
@@ -95,38 +100,45 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult>{
     //  name: bench_sleep2
     //  unit: s
     //  value: 20.0"
-    
+
     let mut parsed_benchmark_results: Vec<BenchmarkResult> = Vec::new();
 
-    for sub_benchmark in output_str.split("---\n") {       
+    for sub_benchmark in output_str.split("---\n") {
+        if sub_benchmark.is_empty() {
+            continue;
+        }
         // Split the sub_benchmark string by newline characters
         let lines: Vec<&str> = sub_benchmark.split('\n').collect();
-        
+
         // Initialize a BenchmarkResult struct to hold the parsed data
         let mut benchmark_result: BenchmarkResult = BenchmarkResult {
             name: "".to_string(),
             unit: "".to_string(),
             value: 0.0,
         };
-        
-        let mut count = 0;
+
         // Iterate over each line and split by the colon
         for line in lines {
-            count += 1;
             if let Some((key, value)) = line.split_once(": ") {
-                match count {
-                    1=>benchmark_result.name = value.to_string(),
-                    2=>benchmark_result.unit = value.to_string(),
-                    3=> {
-                        let parsed_value: f64 = value.parse().unwrap();
-                        benchmark_result.value = parsed_value;
-                    },
+                if key == "name" {
+                    benchmark_result.name = value.to_string()
+                } else if key == "unit" {
+                    benchmark_result.unit = value.to_string()
+                } else if key == "value" {
+                    let parsed_value: f64 = value.parse().unwrap();
+                    benchmark_result.value = parsed_value;
                 }
             }
         }
 
         parsed_benchmark_results.push(benchmark_result);
     }
-    
+
+    // Remove the last element, as it is part of hermit, i.e.:
+    // "Number of interrupts
+    // [0][FPU]: 2011
+    // [1][Timer]: 1"
+    parsed_benchmark_results.pop();
+
     parsed_benchmark_results
 }

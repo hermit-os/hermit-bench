@@ -14,6 +14,11 @@ struct BenchmarkResult {
     value: f64,
 }
 
+const DEFAULT_ITERATIONS: u32 = 1;
+fn default_iterations() -> u32 {
+    DEFAULT_ITERATIONS
+}
+
 #[derive(Serialize, Deserialize, Debug)]
 struct Benchmark {
     name: String,
@@ -21,6 +26,8 @@ struct Benchmark {
     command: String, // The command to run the benchmark. This is optional, but then a path must be provided.
     #[serde(default)]
     path: String, // The path to the file to get the size of. This is optional, but then a command must be provided.
+    #[serde(default = "default_iterations")]
+    iterations: u32, // The number of iterations to run the benchmark.
 }
 
 fn main() -> io::Result<()> {
@@ -40,13 +47,12 @@ fn main() -> io::Result<()> {
     eprintln!("Loaded benchmarks:");
     eprintln!("{loaded_benchmarks_str}");
 
-    // Run the benchmarks.
-    eprintln!("Running benchmarks:");
-
+    // Change the working directory to the relative path
     std::process::Command::new("sh")
         .arg("-c")
         .arg(format!("cd {relative_path}"));
 
+    // Run the benchmarks.
     let mut results: Vec<BenchmarkResult> = Vec::new();
     for benchmark in &mut benchmarks {
         if benchmark.path == "" {
@@ -92,66 +98,91 @@ fn parse_benchmarks(input_file: &String) -> Result<Vec<Benchmark>, Box<dyn Error
 }
 
 fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
-    // Run the benchmark command and return the result.
+    let mut parsed_benchmark_results: Vec<BenchmarkResult> = Vec::new();
+
+    // Run the benchmark the specified number of times.
+    for i in 0..benchmark.iterations {
+        // Run the benchmark command and return the result.
+        let output_str = run_benchmark_command(benchmark);
+
+        // Split the output string by the "---" separator, to get the individual sub-benchmarks
+        //
+        // Example string:
+        // "name: bench_sleep
+        //  unit: s
+        //  value: 10.0
+        //  ---
+        //  name: bench_sleep2
+        //  unit: s
+        //  value: 20.0"
+        for sub_benchmark in output_str.split("---\n") {
+            if sub_benchmark.is_empty() {
+                continue;
+            }
+            // Split the sub_benchmark string by newline characters
+            let lines: Vec<&str> = sub_benchmark.split('\n').collect();
+
+            // Initialize a BenchmarkResult struct to hold the parsed data
+            let mut benchmark_result: BenchmarkResult = BenchmarkResult {
+                name: "".to_string(),
+                unit: "".to_string(),
+                value: 0.0,
+            };
+
+            // Iterate over each line and split by the colon
+            for line in lines {
+                if let Some((key, value)) = line.split_once(": ") {
+                    // Save all information to results on first iteration
+                    if i == 0 {
+                        if key == "name" {
+                            benchmark_result.name = value.to_string()
+                        } else if key == "unit" {
+                            benchmark_result.unit = value.to_string()
+                        } else if key == "value" {
+                            let parsed_value: f64 = value.parse().unwrap();
+                            // Average the results
+                            benchmark_result.value += parsed_value / benchmark.iterations as f64;
+                        }
+                    } else if key == "name" {
+                        benchmark_result.name = value.to_string();
+                    }
+                    // Save only value to results on subsequent iterations
+                    else if key == "value" {
+                        for result in &mut parsed_benchmark_results {
+                            if result.name == benchmark_result.name {
+                                let parsed_value: f64 = value.parse().unwrap();
+                                result.value += parsed_value / benchmark.iterations as f64;
+                                // Average the results
+                            }
+                        }
+                    }
+                }
+            }
+
+            // If this is the first iteration, add the benchmark result to the vector, to register a "new" benchmark
+            if i == 0 {
+                parsed_benchmark_results.push(benchmark_result);
+            }
+        }
+
+        // Remove the last element, as it is part of hermit, i.e.:
+        // "Number of interrupts
+        // [0][FPU]: 2011
+        // [1][Timer]: 1"
+        parsed_benchmark_results.pop();
+    }
+
+    parsed_benchmark_results
+}
+
+fn run_benchmark_command(benchmark: &Benchmark) -> String {
     let output = std::process::Command::new("sh")
         .arg("-c")
         .arg(&benchmark.command)
         .output()
         .expect("failed to execute process");
 
-    let output_str = String::from_utf8_lossy(&output.stdout);
-
-    // Split the output string by the "---" separator, to get the individual sub-benchmarks
-    //
-    // Example string:
-    // "name: bench_sleep
-    //  unit: s
-    //  value: 10.0
-    //  ---
-    //  name: bench_sleep2
-    //  unit: s
-    //  value: 20.0"
-
-    let mut parsed_benchmark_results: Vec<BenchmarkResult> = Vec::new();
-
-    for sub_benchmark in output_str.split("---\n") {
-        if sub_benchmark.is_empty() {
-            continue;
-        }
-        // Split the sub_benchmark string by newline characters
-        let lines: Vec<&str> = sub_benchmark.split('\n').collect();
-
-        // Initialize a BenchmarkResult struct to hold the parsed data
-        let mut benchmark_result: BenchmarkResult = BenchmarkResult {
-            name: "".to_string(),
-            unit: "".to_string(),
-            value: 0.0,
-        };
-
-        // Iterate over each line and split by the colon
-        for line in lines {
-            if let Some((key, value)) = line.split_once(": ") {
-                if key == "name" {
-                    benchmark_result.name = value.to_string()
-                } else if key == "unit" {
-                    benchmark_result.unit = value.to_string()
-                } else if key == "value" {
-                    let parsed_value: f64 = value.parse().unwrap();
-                    benchmark_result.value = parsed_value;
-                }
-            }
-        }
-
-        parsed_benchmark_results.push(benchmark_result);
-    }
-
-    // Remove the last element, as it is part of hermit, i.e.:
-    // "Number of interrupts
-    // [0][FPU]: 2011
-    // [1][Timer]: 1"
-    parsed_benchmark_results.pop();
-
-    parsed_benchmark_results
+    String::from_utf8_lossy(&output.stdout).to_string()
 }
 
 fn get_size(benchmark: &Benchmark) -> BenchmarkResult {

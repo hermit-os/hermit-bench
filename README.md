@@ -28,7 +28,7 @@ The JSON input file might look like this:
 The attributes are:
 | Attribute  | Description | Default |
 |---|---|---|
-| `name`        | The name of the test (unused)                 | MUST BE SET AND UNIQUE |
+| `name`        | The name of the test                          | MUST BE SET AND UNIQUE |
 | `command`     | The command to execute                        | ""    |
 | `iterations`  | The number of times to execute the command    | 1     |
 | `path`        | The path to the executable                    | ""    |

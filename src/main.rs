@@ -142,7 +142,8 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
                     // Save all information to results on first iteration
                     if i == 0 {
                         if key == "name" {
-                            benchmark_result.name = value.to_string()
+                            benchmark_result.name =
+                                value.to_string() + " - " + benchmark.name.as_str();
                         } else if key == "unit" {
                             benchmark_result.unit = value.to_string()
                         } else if key == "value" {

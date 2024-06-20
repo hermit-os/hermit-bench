@@ -54,16 +54,14 @@ fn main() -> io::Result<()> {
     println!("Loaded benchmarks:");
     println!("{loaded_benchmarks_str}");
 
-    // Change the working directory to the relative path
-    std::process::Command::new("sh")
-        .arg("-c")
-        .arg(format!("cd {relative_path}"));
-
     // Run the benchmarks.
     let mut results: Vec<BenchmarkResult> = Vec::new();
     for benchmark in &mut benchmarks {
         // If there is no path, then it's a command benchmark.
         if benchmark.path == "" {
+            // Before command, change the working directory to the relative path
+            benchmark.command = format!("cd {0} && {1}", relative_path, benchmark.command);
+
             println!(
                 "Running benchmark {0}: {1}",
                 benchmark.name, benchmark.command
@@ -77,6 +75,8 @@ fn main() -> io::Result<()> {
             // Add the results to the overall results vector.
             results.extend(benchmark_result);
         } else {
+            // Adapt relative path
+            benchmark.path = format!("{}/{}", relative_path, benchmark.path);
             println!("Determining size of file at {0}", benchmark.path);
             let benchmark_result = get_size(benchmark);
             results.push(benchmark_result);

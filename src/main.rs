@@ -17,7 +17,10 @@ struct BenchmarkResult {
 #[derive(Serialize, Deserialize, Debug)]
 struct Benchmark {
     name: String,
-    command: String,
+    #[serde(default)]
+    command: String, // The command to run the benchmark. This is optional, but then a path must be provided.
+    #[serde(default)]
+    path: String, // The path to the file to get the size of. This is optional, but then a command must be provided.
 }
 
 fn main() -> io::Result<()> {
@@ -46,18 +49,24 @@ fn main() -> io::Result<()> {
 
     let mut results: Vec<BenchmarkResult> = Vec::new();
     for benchmark in &mut benchmarks {
-        eprintln!(
-            "Running benchmark {0}: {1}",
-            benchmark.name, benchmark.command
-        );
-        let benchmark_result = run_benchmark(benchmark);
+        if benchmark.path == "" {
+            eprintln!(
+                "Running benchmark {0}: {1}",
+                benchmark.name, benchmark.command
+            );
+            let benchmark_result = run_benchmark(benchmark);
 
-        // Serialize the results to a JSON string for debugging.
-        let results_str = serde_json::to_string_pretty(&benchmark_result).unwrap();
-        eprintln!("Results: {results_str}");
+            // Serialize the results to a JSON string for debugging.
+            let results_str = serde_json::to_string_pretty(&benchmark_result).unwrap();
+            eprintln!("Results: {results_str}");
 
-        // Add the results to the overall results vector.
-        results.extend(benchmark_result);
+            // Add the results to the overall results vector.
+            results.extend(benchmark_result);
+        } else {
+            eprintln!("Determining size of file at {0}", benchmark.path);
+            let benchmark_result = get_size(benchmark);
+            results.push(benchmark_result);
+        }
     }
 
     // Write the results to a file.
@@ -143,4 +152,15 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
     parsed_benchmark_results.pop();
 
     parsed_benchmark_results
+}
+
+fn get_size(benchmark: &Benchmark) -> BenchmarkResult {
+    let metadata = std::fs::metadata(&benchmark.path).unwrap();
+    let size = metadata.len() as f64;
+
+    BenchmarkResult {
+        name: benchmark.name.clone(),
+        unit: "bytes".to_string(),
+        value: size,
+    }
 }

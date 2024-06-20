@@ -7,6 +7,7 @@ use std::{
     io::{self, BufReader},
 };
 
+// Output format to be compatible with github-action-benchmark
 #[derive(Serialize)]
 struct BenchmarkResult {
     name: String,
@@ -19,15 +20,20 @@ fn default_iterations() -> u32 {
     DEFAULT_ITERATIONS
 }
 
+// Input format for the hermit JSON file
+//
+// A benchmark can either use a path to a file or a command to run.
+// If a path is provided, the benchmark will determine the size of the file.
+// If a command is provided, the benchmark will run the command and parse the output.
 #[derive(Serialize, Deserialize, Debug)]
 struct Benchmark {
     name: String,
     #[serde(default)]
-    command: String, // The command to run the benchmark. This is optional, but then a path must be provided.
+    command: String,
     #[serde(default)]
-    path: String, // The path to the file to get the size of. This is optional, but then a command must be provided.
+    path: String,
     #[serde(default = "default_iterations")]
-    iterations: u32, // The number of iterations to run the benchmark.
+    iterations: u32, // The number of iterations to run the benchmark. Default is 1.
 }
 
 fn main() -> io::Result<()> {
@@ -36,16 +42,17 @@ fn main() -> io::Result<()> {
     let input_file = &args[1];
     let relative_path = &args[2];
 
+    // Construct the full path to the input file.
     let input_file = &format!("{}{}", relative_path, input_file);
 
     // Parse the benchmarks from the input file.
-    eprintln!("Parsing benchmarks from {input_file}:");
+    println!("Parsing benchmarks from {input_file}:");
 
     let mut benchmarks = parse_benchmarks(input_file).unwrap();
 
     let loaded_benchmarks_str = serde_json::to_string_pretty(&benchmarks).unwrap();
-    eprintln!("Loaded benchmarks:");
-    eprintln!("{loaded_benchmarks_str}");
+    println!("Loaded benchmarks:");
+    println!("{loaded_benchmarks_str}");
 
     // Change the working directory to the relative path
     std::process::Command::new("sh")
@@ -55,8 +62,9 @@ fn main() -> io::Result<()> {
     // Run the benchmarks.
     let mut results: Vec<BenchmarkResult> = Vec::new();
     for benchmark in &mut benchmarks {
+        // If there is no path, then it's a command benchmark.
         if benchmark.path == "" {
-            eprintln!(
+            println!(
                 "Running benchmark {0}: {1}",
                 benchmark.name, benchmark.command
             );
@@ -64,25 +72,24 @@ fn main() -> io::Result<()> {
 
             // Serialize the results to a JSON string for debugging.
             let results_str = serde_json::to_string_pretty(&benchmark_result).unwrap();
-            eprintln!("Results: {results_str}");
+            println!("Results: {results_str}");
 
             // Add the results to the overall results vector.
             results.extend(benchmark_result);
         } else {
-            eprintln!("Determining size of file at {0}", benchmark.path);
+            println!("Determining size of file at {0}", benchmark.path);
             let benchmark_result = get_size(benchmark);
             results.push(benchmark_result);
         }
     }
 
-    // Write the results to a file.
+    // Write the results to the output file.
     let bench_json_str = serde_json::to_string_pretty(&results).unwrap();
-
     let output_path = format!("{}/{}", relative_path, "results.json");
 
     std::fs::write(output_path, &bench_json_str).unwrap();
 
-    eprintln!("Results written to results.json");
+    println!("Results written to results.json");
 
     Ok(())
 }

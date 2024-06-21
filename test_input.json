@@ -1,0 +1,7 @@
+[
+  {
+    "name": "rusty_demo",
+    "command": "echo '/*BENCHMARK OUTPUT*/\nname: bench_sleep1\nunit: s\nvalue: 10.0\n/*BENCHMARK OUTPUT END*/\n/*BENCHMARK OUTPUT*/\nname: bench_sleep2\nunit: s\nvalue: 20.2\n/*BENCHMARK OUTPUT END*/\n'",
+    "iterations": 1
+  }
+]

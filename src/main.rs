@@ -1,3 +1,4 @@
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::{
     env,
@@ -131,29 +132,27 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
     );
 
     let mut parsed_benchmark_results: Vec<BenchmarkResult> = Vec::new();
+    let format = Regex::new(r"\/\*BENCHMARK OUTPUT\*\/\nname:\s*(.+)\s*unit:\s*(.+)\s*value:\s*([0-9]*\.*[0-9]+)\n\/\*BENCHMARK OUTPUT END\*\/\n").unwrap();
 
     // Run the benchmark the specified number of times.
     for i in 0..benchmark.iterations {
         // Run the benchmark command and return the result.
         let output_str = run_benchmark_command(benchmark);
 
-        // Split the output string by the "---" separator, to get the individual sub-benchmarks
+        // Split the output string by the separator, to get the individual sub-benchmarks
         //
         // Example string:
-        // "name: bench_sleep
+        //  /*BENCHMARK OUTPUT*/
+        //  name: bench_sleep1
         //  unit: s
         //  value: 10.0
-        //  ---
+        //  /*BENCHMARK OUTPUT END*/
+        //  /*BENCHMARK OUTPUT*/
         //  name: bench_sleep2
         //  unit: s
-        //  value: 20.0"
-        for sub_benchmark in output_str.split("---\n") {
-            if sub_benchmark.is_empty() {
-                continue;
-            }
-            // Split the sub_benchmark string by newline characters
-            let lines: Vec<&str> = sub_benchmark.split('\n').collect();
-
+        //  value: 20.0
+        //  /*BENCHMARK OUTPUT END*/
+        for sub_benchmark_caps in format.captures_iter(&output_str) {
             // Initialize a BenchmarkResult struct to hold the parsed data
             let mut benchmark_result: BenchmarkResult = BenchmarkResult {
                 name: "".to_string(),
@@ -161,40 +160,27 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
                 value: 0.0,
             };
 
-            // Iterate over each line and split by the colon
-            for line in lines {
-                if let Some((key, value)) = line.split_once(": ") {
-                    // Save all information to results on first iteration
-                    if i == 0 {
-                        if key == "name" {
-                            benchmark_result.name =
-                                value.to_string() + " - " + benchmark.name.as_str();
-                        } else if key == "unit" {
-                            benchmark_result.unit = value.to_string()
-                        } else if key == "value" {
-                            let parsed_value: f64 = value.parse().unwrap();
-                            // Average the results
-                            benchmark_result.value += parsed_value / benchmark.iterations as f64;
-                        }
-                    } else if key == "name" {
-                        benchmark_result.name = value.to_string();
-                    }
-                    // Save only value to results on subsequent iterations
-                    else if key == "value" {
-                        for result in &mut parsed_benchmark_results {
-                            if result.name == benchmark_result.name {
-                                let parsed_value: f64 = value.parse().unwrap();
-                                result.value += parsed_value / benchmark.iterations as f64;
-                                // Average the results
-                            }
-                        }
+            // Parse name, unit and value of the benchmark
+            benchmark_result.name = sub_benchmark_caps[1].to_string();
+            benchmark_result.unit = sub_benchmark_caps[2].to_string();
+            // Average the results
+            benchmark_result.value =
+                sub_benchmark_caps[3].parse::<f64>().unwrap() / benchmark.iterations as f64;
+
+            // If this isn't the first iteration, add the value to the existing benchmark
+            if i == 0 {
+                for result in &mut parsed_benchmark_results {
+                    if result.name == benchmark_result.name {
+                        // Average the results
+                        result.value += sub_benchmark_caps[3].parse::<f64>().unwrap()
+                            / benchmark.iterations as f64;
                     }
                 }
             }
 
             // If this is the first iteration, add the benchmark result to the vector, to register a "new" benchmark
             // Also check if the benchmark has a name, if not, don't add it
-            if i == 0 && benchmark_result.name != ""{
+            if i == 0 && benchmark_result.name != "" {
                 parsed_benchmark_results.push(benchmark_result);
             }
         }

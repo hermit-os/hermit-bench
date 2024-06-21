@@ -42,7 +42,10 @@ The action will execute the commands in the JSON file and store the results in a
 
 The outputs of any benchmark that is executed must follow the format:
 ```yaml
-name: <name>
-unit: <unit>
-value: <value>
+/*BENCHMARK OUTPUT*/
+name: name
+unit: unit
+value: value
+/*BENCHMARK OUTPUT END*/
 ```
+It is recommended to use the crate [hermit_bench_output](https://crates.io/crates/hermit_bench_output) to generate the output.

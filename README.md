@@ -28,10 +28,12 @@ The JSON input file might look like this:
 The attributes are:
 | Attribute  | Description | Default |
 |---|---|---|
-| `name`        | The name of the test                          | MUST BE SET AND UNIQUE |
-| `command`     | The command to execute                        | ""    |
-| `iterations`  | The number of times to execute the command    | 1     |
-| `path`        | The path to the executable                    | ""    |
+| `name`          | The name of the test                          | MUST BE SET AND UNIQUE |
+| `command`       | The command to execute                        | ""    |
+| `path`          | The path to the executable                    | ""    |
+| `iterations`    | The number of times to execute the command    | 1     |
+| `external_time` | Measure the time of the command externally    | false |
+
 
 As can be seen, both `command` and `path` are optional. If `command` is set, it will be executed `iterations` times. If `path` is set, the size of the file at the given path will be measured (exactly one time regardless of `iterations`).
 

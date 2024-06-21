@@ -5,6 +5,7 @@ use std::{
     f64,
     fs::File,
     io::{self, BufReader},
+    time::Instant,
 };
 
 // Output format to be compatible with github-action-benchmark
@@ -34,6 +35,8 @@ struct Benchmark {
     path: String,
     #[serde(default = "default_iterations")]
     iterations: u32, // The number of iterations to run the benchmark. Default is 1.
+    #[serde(default = "bool::default")] // Default is false
+    external_time: bool, // If true, the benchmark will be run with the external time command
 }
 
 fn main() -> io::Result<()> {
@@ -70,18 +73,27 @@ fn main() -> io::Result<()> {
             // Before command, change the working directory to the relative path
             benchmark.command = format!("cd {0} && {1}", relative_path, benchmark.command);
 
-            println!(
-                "Running benchmark {0}: {1}",
-                benchmark.name, benchmark.command
-            );
-            let benchmark_result = run_benchmark(benchmark);
+            if benchmark.external_time == true {
+                // External time benchmark
+                let benchmark_result = external_time_benchmark(benchmark);
 
-            // Serialize the results to a JSON string for debugging.
-            let results_str = serde_json::to_string_pretty(&benchmark_result).unwrap();
-            println!("Results: {results_str}");
+                // Serialize the results to a JSON string for debugging.
+                let results_str = serde_json::to_string_pretty(&benchmark_result).unwrap();
+                println!("Results: {results_str}");
 
-            // Add the results to the overall results vector.
-            results.extend(benchmark_result);
+                // Add the results to the overall results vector.
+                results.push(benchmark_result);
+            } else {
+                // Internal time benchmark
+                let benchmark_result = run_benchmark(benchmark);
+
+                // Serialize the results to a JSON string for debugging.
+                let results_str = serde_json::to_string_pretty(&benchmark_result).unwrap();
+                println!("Results: {results_str}");
+
+                // Add the results to the overall results vector.
+                results.extend(benchmark_result);
+            }
         } else {
             // Adapt relative path
             benchmark.path = format!("{}/{}", relative_path, benchmark.path);
@@ -113,6 +125,11 @@ fn parse_benchmarks(input_file: &String) -> Result<Vec<Benchmark>, Box<dyn Error
 }
 
 fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
+    println!(
+        "Running benchmark {0}: {1}",
+        benchmark.name, benchmark.command
+    );
+
     let mut parsed_benchmark_results: Vec<BenchmarkResult> = Vec::new();
 
     // Run the benchmark the specified number of times.
@@ -209,5 +226,23 @@ fn get_size(benchmark: &Benchmark) -> BenchmarkResult {
         name: benchmark.name.clone(),
         unit: "bytes".to_string(),
         value: size,
+    }
+}
+
+fn external_time_benchmark(benchmark: &Benchmark) -> BenchmarkResult {
+    println!(
+        "Running externally timed benchmark {0}: {1}",
+        benchmark.name, benchmark.command
+    );
+
+    // Run the benchmark with the external time command
+    let now = Instant::now();
+    run_benchmark_command(benchmark);
+    let elapsed_time = now.elapsed();
+
+    BenchmarkResult {
+        name: benchmark.name.clone(),
+        unit: "s".to_string(),
+        value: elapsed_time.as_secs_f64(),
     }
 }

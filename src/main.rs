@@ -57,8 +57,16 @@ fn main() -> io::Result<()> {
     // Run the benchmarks.
     let mut results: Vec<BenchmarkResult> = Vec::new();
     for benchmark in &mut benchmarks {
-        // If there is no path, then it's a command benchmark.
-        if benchmark.path == "" {
+        // Check if there is a command or a path, if not it's an invalid benchmark
+        if benchmark.command == "" && benchmark.path == "" {
+            eprintln!("Invalid benchmark: {0}", benchmark.name);
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "Invalid benchmark",
+            ));
+        }
+        // If it's a command benchmark.
+        else if benchmark.command != "" {
             // Before command, change the working directory to the relative path
             benchmark.command = format!("cd {0} && {1}", relative_path, benchmark.command);
 

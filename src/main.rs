@@ -193,16 +193,11 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
             }
 
             // If this is the first iteration, add the benchmark result to the vector, to register a "new" benchmark
-            if i == 0 {
+            // Also check if the benchmark has a name, if not, don't add it
+            if i == 0 && benchmark_result.name != ""{
                 parsed_benchmark_results.push(benchmark_result);
             }
         }
-
-        // Remove the last element, as it is part of hermit, i.e.:
-        // "Number of interrupts
-        // [0][FPU]: 2011
-        // [1][Timer]: 1"
-        parsed_benchmark_results.pop();
     }
 
     parsed_benchmark_results

@@ -15,11 +15,16 @@ struct BenchmarkResult {
     name: String,
     unit: String,
     value: f64,
+    group: String,
 }
 
 const DEFAULT_ITERATIONS: u32 = 1;
 fn default_iterations() -> u32 {
     DEFAULT_ITERATIONS
+}
+
+fn default_group() -> String {
+    "General".to_string()
 }
 
 // Input format for the hermit JSON file
@@ -38,6 +43,8 @@ struct Benchmark {
     iterations: u32, // The number of iterations to run the benchmark. Default is 1.
     #[serde(default = "bool::default")] // Default is false
     external_time: bool, // If true, the benchmark will be run with the external time command
+    #[serde(default = "default_group")]
+    group: String,
 }
 
 fn main() -> io::Result<()> {
@@ -158,6 +165,7 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
                 name: "".to_string(),
                 unit: "".to_string(),
                 value: 0.0,
+                group: benchmark.group.clone(),
             };
 
             // Parse name, unit and value of the benchmark
@@ -207,6 +215,7 @@ fn get_size(benchmark: &Benchmark) -> BenchmarkResult {
         name: benchmark.name.clone(),
         unit: "bytes".to_string(),
         value: size,
+        group: benchmark.group.clone(),
     }
 }
 
@@ -225,5 +234,6 @@ fn external_time_benchmark(benchmark: &Benchmark) -> BenchmarkResult {
         name: benchmark.name.clone(),
         unit: "s".to_string(),
         value: elapsed_time.as_secs_f64(),
+        group: benchmark.group.clone(),
     }
 }

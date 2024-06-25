@@ -53,6 +53,25 @@ fn main() -> io::Result<()> {
     let args: Vec<String> = env::args().collect();
     let input_file = &args[1];
     let relative_path = &args[2];
+    let build_command = &args[3..].join(" ");
+
+    // Initialize the results vector.
+    let mut results: Vec<BenchmarkResult> = Vec::new();
+
+    // Run the build command. And treat it as a benchmark.
+    let build_benchmark = Benchmark {
+        name: "Build".to_string(),
+        command: format!("cd {0} && {1}", relative_path, build_command),
+        iterations: 1,
+        path: "".to_string(),
+        external_time: true,
+        group: "General".to_string(),
+    };
+
+    let build_result = external_time_benchmark(&build_benchmark);
+
+    // Add the results to the overall results vector.
+    results.push(build_result);
 
     // Construct the full path to the input file.
     let input_file = &format!("{}{}", relative_path, input_file);
@@ -67,7 +86,6 @@ fn main() -> io::Result<()> {
     println!("{loaded_benchmarks_str}");
 
     // Run the benchmarks.
-    let mut results: Vec<BenchmarkResult> = Vec::new();
     for benchmark in &mut benchmarks {
         // Check if there is a command or a path, if not it's an invalid benchmark
         if benchmark.command == "" && benchmark.path == "" {

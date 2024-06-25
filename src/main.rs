@@ -225,15 +225,23 @@ fn external_time_benchmark(benchmark: &Benchmark) -> BenchmarkResult {
         benchmark.name, benchmark.command
     );
 
-    // Run the benchmark with the external time command
-    let now = Instant::now();
-    run_benchmark_command(benchmark);
-    let elapsed_time = now.elapsed();
+    let mut average_time = 0.0;
+
+    // Run the benchmark the specified number of times.
+    for _ in 0..benchmark.iterations {
+        // Run the benchmark with the external time command
+        let now = Instant::now();
+        run_benchmark_command(benchmark);
+        let elapsed_time = now.elapsed();
+
+        // Add the elapsed time to the average time
+        average_time += elapsed_time.as_secs_f64() / benchmark.iterations as f64;
+    }
 
     BenchmarkResult {
         name: benchmark.name.clone(),
         unit: "s".to_string(),
-        value: elapsed_time.as_secs_f64(),
+        value: average_time,
         group: benchmark.group.clone(),
     }
 }

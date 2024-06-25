@@ -16,6 +16,7 @@ struct BenchmarkResult {
     unit: String,
     value: f64,
     group: String,
+    range: f64,
 }
 
 const DEFAULT_ITERATIONS: u32 = 1;
@@ -161,27 +162,29 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
         //  /*BENCHMARK OUTPUT END*/
         for sub_benchmark_caps in format.captures_iter(&output_str) {
             // Initialize a BenchmarkResult struct to hold the parsed data
-            let mut benchmark_result: BenchmarkResult = BenchmarkResult {
-                name: "".to_string(),
-                unit: "".to_string(),
-                value: 0.0,
+            let benchmark_result: BenchmarkResult = BenchmarkResult {
+                name: sub_benchmark_caps[1].to_string(),
+                unit: sub_benchmark_caps[2].to_string(),
+                value: sub_benchmark_caps[3].parse::<f64>().unwrap(),
                 group: benchmark.group.clone(),
+                range: 0.0,
             };
 
-            // Parse name, unit and value of the benchmark
-            benchmark_result.name = sub_benchmark_caps[1].to_string();
-            benchmark_result.unit = sub_benchmark_caps[2].to_string();
-            // Average the results
-            benchmark_result.value =
-                sub_benchmark_caps[3].parse::<f64>().unwrap() / benchmark.iterations as f64;
-
             // If this isn't the first iteration, add the value to the existing benchmark
-            if i == 0 {
+            if i != 0 {
                 for result in &mut parsed_benchmark_results {
                     if result.name == benchmark_result.name {
+                        let dev_last_avg = benchmark_result.value - result.value;
+
                         // Average the results
-                        result.value += sub_benchmark_caps[3].parse::<f64>().unwrap()
-                            / benchmark.iterations as f64;
+                        result.value += (sub_benchmark_caps[3].parse::<f64>().unwrap()
+                            - result.value)
+                            / i as f64;
+
+                        let dev_new_avg = benchmark_result.value - result.value;
+
+                        // Calculate the new standard deviation step
+                        result.range = (result.range + dev_last_avg * dev_new_avg).sqrt();
                     }
                 }
             }
@@ -192,6 +195,10 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
                 parsed_benchmark_results.push(benchmark_result);
             }
         }
+    }
+
+    for result in &mut parsed_benchmark_results {
+        result.range = (result.range / (benchmark.iterations) as f64).sqrt();
     }
 
     parsed_benchmark_results
@@ -216,6 +223,7 @@ fn get_size(benchmark: &Benchmark) -> BenchmarkResult {
         unit: "bytes".to_string(),
         value: size,
         group: benchmark.group.clone(),
+        range: 0.0,
     }
 }
 
@@ -226,6 +234,7 @@ fn external_time_benchmark(benchmark: &Benchmark) -> BenchmarkResult {
     );
 
     let mut average_time = 0.0;
+    let mut times: Vec<f64> = Vec::new();
 
     // Run the benchmark the specified number of times.
     for _ in 0..benchmark.iterations {
@@ -236,12 +245,23 @@ fn external_time_benchmark(benchmark: &Benchmark) -> BenchmarkResult {
 
         // Add the elapsed time to the average time
         average_time += elapsed_time.as_secs_f64() / benchmark.iterations as f64;
+
+        // Add the elapsed time to the times vector
+        times.push(elapsed_time.as_secs_f64());
     }
+
+    // Determine the standard deviation of the times
+    let mut variance = 0.0;
+    for time in &times {
+        variance += (time - average_time).powi(2);
+    }
+    let standard_deviation = (variance / benchmark.iterations as f64).sqrt();
 
     BenchmarkResult {
         name: benchmark.name.clone(),
         unit: "s".to_string(),
         value: average_time,
         group: benchmark.group.clone(),
+        range: standard_deviation,
     }
 }

@@ -234,11 +234,11 @@ fn run_benchmark_command(benchmark: &Benchmark) -> String {
 
 fn get_size(benchmark: &Benchmark) -> BenchmarkResult {
     let metadata = std::fs::metadata(&benchmark.path).unwrap();
-    let size = metadata.len() as f64;
+    let size = metadata.len() as f64 / (1024*1024) as f64 ; // Convert to MB
 
     BenchmarkResult {
         name: benchmark.name.clone(),
-        unit: "bytes".to_string(),
+        unit: "MB".to_string(),
         value: size,
         group: benchmark.group.clone(),
         range: 0.0,

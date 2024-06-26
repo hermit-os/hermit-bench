@@ -157,6 +157,9 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
         benchmark.name, benchmark.command
     );
 
+    // Run unlogged benchmark, to warm up the system
+    run_benchmark_command(benchmark);
+
     let mut parsed_benchmark_results: Vec<BenchmarkResult> = Vec::new();
     let format = Regex::new(r"\/\*BENCHMARK OUTPUT\*\/\nname:\s*(.+)\s*unit:\s*(.+)\s*value:\s*([0-9]*\.*[0-9]+)\n\/\*BENCHMARK OUTPUT END\*\/\n").unwrap();
 
@@ -234,7 +237,7 @@ fn run_benchmark_command(benchmark: &Benchmark) -> String {
 
 fn get_size(benchmark: &Benchmark) -> BenchmarkResult {
     let metadata = std::fs::metadata(&benchmark.path).unwrap();
-    let size = metadata.len() as f64 / (1024*1024) as f64 ; // Convert to MB
+    let size = metadata.len() as f64 / (1024 * 1024) as f64; // Convert to MB
 
     BenchmarkResult {
         name: benchmark.name.clone(),
@@ -250,6 +253,9 @@ fn external_time_benchmark(benchmark: &Benchmark) -> BenchmarkResult {
         "Running externally timed benchmark {0}: {1}",
         benchmark.name, benchmark.command
     );
+
+    // Run the benchmark once to warm up the system
+    run_benchmark_command(benchmark);
 
     let mut average_time = 0.0;
     let mut times: Vec<f64> = Vec::new();

@@ -17,6 +17,7 @@ struct BenchmarkResult {
     value: f64,
     group: String,
     range: f64,
+    plot_group : String,
 }
 
 const DEFAULT_ITERATIONS: u32 = 1;
@@ -26,6 +27,10 @@ fn default_iterations() -> u32 {
 
 fn default_group() -> String {
     "General".to_string()
+}
+
+fn default_plot_group() -> String {
+    "none".to_string()
 }
 
 // Input format for the hermit JSON file
@@ -46,6 +51,8 @@ struct Benchmark {
     external_time: bool, // If true, the benchmark will be run with the external time command
     #[serde(default = "default_group")]
     group: String,
+    #[serde(default = "default_plot_group")]
+    plot_group: String,
 }
 
 fn main() -> io::Result<()> {
@@ -66,6 +73,7 @@ fn main() -> io::Result<()> {
         path: "".to_string(),
         external_time: true,
         group: "General".to_string(),
+        plot_group: "none".to_string(),
     };
 
     let build_result = external_time_benchmark(&build_benchmark);
@@ -189,6 +197,7 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
                 value: sub_benchmark_caps[3].parse::<f64>().unwrap(),
                 group: benchmark.group.clone(),
                 range: 0.0,
+                plot_group: benchmark.plot_group.clone(),
             };
 
             // If this isn't the first iteration, add the value to the existing benchmark
@@ -245,6 +254,7 @@ fn get_size(benchmark: &Benchmark) -> BenchmarkResult {
         value: size,
         group: benchmark.group.clone(),
         range: 0.0,
+        plot_group: benchmark.plot_group.clone(),
     }
 }
 
@@ -287,5 +297,6 @@ fn external_time_benchmark(benchmark: &Benchmark) -> BenchmarkResult {
         value: average_time,
         group: benchmark.group.clone(),
         range: standard_deviation,
+        plot_group: benchmark.plot_group.clone(),
     }
 }

@@ -169,7 +169,7 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
     run_benchmark_command(benchmark);
 
     let mut parsed_benchmark_results: Vec<BenchmarkResult> = Vec::new();
-    let format = Regex::new(r"\/\*BENCHMARK OUTPUT\*\/\nname:\s*(.+)\s*unit:\s*(.+)\s*value:\s*([0-9]*\.*[0-9]+)\n\/\*BENCHMARK OUTPUT END\*\/\n").unwrap();
+    let format = Regex::new(r"\/\*BENCHMARK OUTPUT\*\/\nname:\s*(.+)\s*unit:\s*(.+)\s*value:\s*([0-9]*\.*[0-9]+)\nplot_group:\s*(.+)\s*\/\*BENCHMARK OUTPUT END\*\/\n").unwrap();
 
     // Run the benchmark the specified number of times.
     for i in 0..benchmark.iterations {
@@ -190,6 +190,13 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
         //  value: 20.0
         //  /*BENCHMARK OUTPUT END*/
         for sub_benchmark_caps in format.captures_iter(&output_str) {
+
+            // Check if the sub-benchmark has a plot group, if not, use the benchmark plot group
+            let mut plot_group = benchmark.plot_group.clone();
+            if sub_benchmark_caps[4].to_string() != " " {
+                plot_group = sub_benchmark_caps[4].to_string();
+            }
+
             // Initialize a BenchmarkResult struct to hold the parsed data
             let benchmark_result: BenchmarkResult = BenchmarkResult {
                 name: sub_benchmark_caps[1].to_string(),
@@ -197,7 +204,7 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
                 value: sub_benchmark_caps[3].parse::<f64>().unwrap(),
                 group: benchmark.group.clone(),
                 range: 0.0,
-                plot_group: benchmark.plot_group.clone(),
+                plot_group: plot_group.clone(),
             };
 
             // If this isn't the first iteration, add the value to the existing benchmark

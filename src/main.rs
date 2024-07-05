@@ -76,7 +76,7 @@ fn main() -> io::Result<()> {
         plot_group: "none".to_string(),
     };
 
-    let build_result = external_time_benchmark(&build_benchmark);
+    let build_result = external_time_benchmark(&build_benchmark, false);
 
     // Add the results to the overall results vector.
     results.push(build_result);
@@ -110,7 +110,7 @@ fn main() -> io::Result<()> {
 
             if benchmark.external_time == true {
                 // External time benchmark
-                let benchmark_result = external_time_benchmark(benchmark);
+                let benchmark_result = external_time_benchmark(benchmark, true);
 
                 // Serialize the results to a JSON string for debugging.
                 let results_str = serde_json::to_string_pretty(&benchmark_result).unwrap();
@@ -166,6 +166,7 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
     );
 
     // Run unlogged benchmark, to warm up the system
+    run_benchmark_command(benchmark);
     run_benchmark_command(benchmark);
 
     let mut parsed_benchmark_results: Vec<BenchmarkResult> = Vec::new();
@@ -265,14 +266,16 @@ fn get_size(benchmark: &Benchmark) -> BenchmarkResult {
     }
 }
 
-fn external_time_benchmark(benchmark: &Benchmark) -> BenchmarkResult {
+fn external_time_benchmark(benchmark: &Benchmark, warmup: bool ) -> BenchmarkResult {
     println!(
         "Running externally timed benchmark {0}: {1}",
         benchmark.name, benchmark.command
     );
 
     // Run the benchmark once to warm up the system
-    run_benchmark_command(benchmark);
+    if warmup {
+        run_benchmark_command(benchmark);
+    }
 
     let mut average_time = 0.0;
     let mut times: Vec<f64> = Vec::new();

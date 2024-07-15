@@ -17,7 +17,7 @@ struct BenchmarkResult {
     value: f64,
     group: String,
     range: f64,
-    plot_group : String,
+    plot_group: String,
 }
 
 const DEFAULT_ITERATIONS: u32 = 1;
@@ -53,6 +53,8 @@ struct Benchmark {
     group: String,
     #[serde(default = "default_plot_group")]
     plot_group: String,
+    #[serde(default = "bool::default")] // Default is false
+    absolute_path: bool, // If true, the path will not get the relative path added
 }
 
 fn main() -> io::Result<()> {
@@ -74,6 +76,7 @@ fn main() -> io::Result<()> {
         external_time: true,
         group: "General".to_string(),
         plot_group: "none".to_string(),
+        absolute_path: false,
     };
 
     let build_result = external_time_benchmark(&build_benchmark, false);
@@ -106,8 +109,9 @@ fn main() -> io::Result<()> {
         // If it's a command benchmark.
         else if benchmark.command != "" {
             // Before command, change the working directory to the relative path
-            benchmark.command = format!("cd {0} && {1}", relative_path, benchmark.command);
-
+            if benchmark.absolute_path == false {
+                benchmark.command = format!("cd {0} && {1}", relative_path, benchmark.command);
+            }
             if benchmark.external_time == true {
                 // External time benchmark
                 let benchmark_result = external_time_benchmark(benchmark, true);
@@ -131,7 +135,9 @@ fn main() -> io::Result<()> {
             }
         } else {
             // Adapt relative path
-            benchmark.path = format!("{}/{}", relative_path, benchmark.path);
+            if benchmark.absolute_path == false {
+                benchmark.path = format!("{}/{}", relative_path, benchmark.path);
+            }
             println!("Determining size of file at {0}", benchmark.path);
             let benchmark_result = get_size(benchmark);
             results.push(benchmark_result);
@@ -191,7 +197,6 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
         //  value: 20.0
         //  /*BENCHMARK OUTPUT END*/
         for sub_benchmark_caps in format.captures_iter(&output_str) {
-
             // Check if the sub-benchmark has a plot group, if not, use the benchmark plot group
             let mut plot_group = benchmark.plot_group.clone();
             if sub_benchmark_caps[4].to_string() != " " {
@@ -253,7 +258,7 @@ fn run_benchmark_command(benchmark: &Benchmark) -> String {
 }
 
 fn get_size(benchmark: &Benchmark) -> BenchmarkResult {
-    let metadata = std::fs::metadata(&benchmark.path).unwrap();
+    let metadata = std::fs::metadata(&benchmark.path).expect("File not found or inaccessible");
     let size = metadata.len() as f64 / (1024 * 1024) as f64; // Convert to MB
 
     BenchmarkResult {
@@ -266,7 +271,7 @@ fn get_size(benchmark: &Benchmark) -> BenchmarkResult {
     }
 }
 
-fn external_time_benchmark(benchmark: &Benchmark, warmup: bool ) -> BenchmarkResult {
+fn external_time_benchmark(benchmark: &Benchmark, warmup: bool) -> BenchmarkResult {
     println!(
         "Running externally timed benchmark {0}: {1}",
         benchmark.name, benchmark.command

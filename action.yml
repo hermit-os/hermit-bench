@@ -23,14 +23,14 @@ runs:
   steps:
     - name: Build
       run: |
-        cd ../../_actions/CarlWachter/hermit-bench/main
+        cd ../../_actions/CarlWachter/hermit-bench/hermit-playground
         cargo build --package hermit-bench
-        cd ../../../../hermit-rs/hermit-rs
+        cd ../../../../hermit-playground/hermit-playground/
       shell: bash
     - name: Run benchmarks
       id: run-bench
       run: |
-        cd ../../_actions/CarlWachter/hermit-bench/main
-        cargo run ${{ inputs.benchmark-file }} ../../../../hermit-rs/hermit-rs ${{ inputs.build-command }}
+        cd ../../_actions/CarlWachter/hermit-bench/hermit-playground
+        cargo run ${{ inputs.benchmark-file }} ../../../../hermit-playground/hermit-playground ${{ inputs.build-command }}
         echo "results-path=./results.json" >> $GITHUB_OUTPUT
       shell: bash

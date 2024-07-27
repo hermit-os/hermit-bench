@@ -1,5 +1,8 @@
+use core::panic;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
+use std::process::{Command, Stdio};
+use std::time::Duration;
 use std::{
     env,
     error::Error,
@@ -8,6 +11,9 @@ use std::{
     io::{self, BufReader},
     time::Instant,
 };
+use wait_timeout::ChildExt;
+
+const TIMEOUT: Duration = Duration::from_secs(60 * 30); // 30 minutes timeout
 
 // Output format to be compatible with github-action-benchmark
 #[derive(Serialize)]
@@ -248,20 +254,57 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
 }
 
 fn run_benchmark_command(benchmark: &Benchmark) -> String {
-    let output = std::process::Command::new("sh")
+    let mut child = Command::new("sh")
         .arg("-c")
         .arg(&benchmark.command)
-        .output()
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
         .expect("failed to execute process");
 
-    if !output.status.success() {
-        eprintln!(
-            "Command failed with error: {}",
-            String::from_utf8_lossy(&output.stderr)
-        );
-    }
+    match child.wait_timeout(TIMEOUT).unwrap() {
+        Some(status) => {
+            // Get the output of the command, if it terminated before the timeout
+            let mut stdout = String::new();
+            if let Some(mut stdout_handle) = child.stdout.take() {
+                std::io::Read::read_to_string(&mut stdout_handle, &mut stdout).unwrap();
+            }
 
-    String::from_utf8_lossy(&output.stdout).to_string()
+            // If the command failed, print the output and error
+            if !status.success() {
+                let mut stderr = String::new();
+                if let Some(mut stderr_handle) = child.stderr.take() {
+                    std::io::Read::read_to_string(&mut stderr_handle, &mut stderr).unwrap();
+                }
+                eprintln!(
+                    "Command failed with output: \n{}\nAnd error: \n{}",
+                    stdout, stderr
+                );
+                //panic!("Command failed");
+            }
+            stdout
+        }
+        None => {
+            // The timeout elapsed
+            child.kill().unwrap();
+
+            // output the commands output message
+            let mut stdout = String::new();
+            if let Some(mut stdout_handle) = child.stdout.take() {
+                std::io::Read::read_to_string(&mut stdout_handle, &mut stdout).unwrap();
+            }
+
+            let mut stderr = String::new();
+            if let Some(mut stderr_handle) = child.stderr.take() {
+                std::io::Read::read_to_string(&mut stderr_handle, &mut stderr).unwrap();
+            }
+            eprintln!(
+                "Command failed with output: \n{}\nAnd error: \n{}",
+                stdout, stderr
+            );
+            panic!("Command timed out");
+        }
+    }
 }
 
 fn get_size(benchmark: &Benchmark) -> BenchmarkResult {

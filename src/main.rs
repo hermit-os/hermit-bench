@@ -254,6 +254,13 @@ fn run_benchmark_command(benchmark: &Benchmark) -> String {
         .output()
         .expect("failed to execute process");
 
+    if !output.status.success() {
+        eprintln!(
+            "Command failed with error: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+    }
+
     String::from_utf8_lossy(&output.stdout).to_string()
 }
 

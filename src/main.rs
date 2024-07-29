@@ -271,7 +271,8 @@ fn run_benchmark_command(benchmark: &Benchmark) -> String {
             }
 
             // If the command failed, print the output and error
-            if !status.success() {
+            // Also disregard the error code 137, which parallel loves to throw
+            if !status.success() && status.code().unwrap() != 137 {
                 let mut stderr = String::new();
                 if let Some(mut stderr_handle) = child.stderr.take() {
                     std::io::Read::read_to_string(&mut stderr_handle, &mut stderr).unwrap();
@@ -280,6 +281,7 @@ fn run_benchmark_command(benchmark: &Benchmark) -> String {
                     "Command failed with output: \n{}\nAnd error: \n{}",
                     stdout, stderr
                 );
+                eprintln!("Exit code: {}", status.code().unwrap());
                 //panic!("Command failed");
             }
             stdout

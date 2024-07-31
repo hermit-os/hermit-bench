@@ -46,6 +46,7 @@ The outputs of any benchmark that is executed must follow the format:
 name: name
 unit: unit
 value: value
+plot_group: group (empty equals no group)
 /*BENCHMARK OUTPUT END*/
 ```
 It is recommended to use the crate [hermit_bench_output](https://crates.io/crates/hermit_bench_output) to generate the output.

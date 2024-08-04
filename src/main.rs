@@ -280,7 +280,7 @@ fn run_benchmark_command(benchmark: &Benchmark) -> String {
                     "Command failed with output: \n{}\nAnd error: \n{}",
                     stdout, stderr
                 );
-                panic!("Command failed");
+                //panic!("Command failed");
             }
             stdout
         }

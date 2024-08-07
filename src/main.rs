@@ -332,6 +332,7 @@ fn external_time_benchmark(benchmark: &Benchmark, warmup: bool) -> BenchmarkResu
     // Run the benchmark once to warm up the system
     if warmup {
         run_benchmark_command(benchmark);
+        run_benchmark_command(benchmark);
     }
 
     let mut average_time = 0.0;

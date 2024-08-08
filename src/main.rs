@@ -26,6 +26,15 @@ struct BenchmarkResult {
     plot_group: String,
 }
 
+// Struct to parse the output of the benchmark, stores all data points in a single vector
+struct BenchmarkResultRaw {
+    name: String,
+    unit: String,
+    value: Vec<f64>,
+    group: String,
+    plot_group: String,
+}
+
 const DEFAULT_ITERATIONS: u32 = 1;
 fn default_iterations() -> u32 {
     DEFAULT_ITERATIONS
@@ -181,27 +190,51 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
     run_benchmark_command(benchmark);
     run_benchmark_command(benchmark);
 
-    let mut parsed_benchmark_results: Vec<BenchmarkResult> = Vec::new();
+    let mut parse_benchmark_results: Vec<BenchmarkResultRaw> = Vec::new();
     let format = Regex::new(r"\/\*BENCHMARK OUTPUT\*\/\nname:\s*(.+)\s*unit:\s*(.+)\s*value:\s*([0-9]*\.*[0-9]+)\nplot_group:\s*(.+)\s*\/\*BENCHMARK OUTPUT END\*\/\n").unwrap();
+    // Split the output string by the separator, to get the individual sub-benchmarks
+    //
+    // Example string:
+    //  /*BENCHMARK OUTPUT*/
+    //  name: bench_sleep1
+    //  unit: s
+    //  value: 10.0
+    //  plot_group:
+    //  /*BENCHMARK OUTPUT END*/
+    //  /*BENCHMARK OUTPUT*/
+    //  name: bench_sleep2
+    //  unit: s
+    //  value: 20.0
+    //  plot_group:
+    //  /*BENCHMARK OUTPUT END*/
 
-    // Run the benchmark the specified number of times.
-    for i in 0..benchmark.iterations {
+    // Run the benchmark for the first time to get all the benchmarks
+    let mut output_str = run_benchmark_command(benchmark);
+    for sub_benchmark_caps in format.captures_iter(&output_str) {
+        // Check if the sub-benchmark has a plot group, if not, use the benchmark plot group
+        let mut plot_group = benchmark.plot_group.clone();
+        if sub_benchmark_caps[4].to_string() != " " {
+            plot_group = sub_benchmark_caps[4].to_string();
+        }
+
+        // Initialize a BenchmarkResult struct to hold the parsed data
+        let benchmark_result: BenchmarkResultRaw = BenchmarkResultRaw {
+            name: sub_benchmark_caps[1].to_string(),
+            unit: sub_benchmark_caps[2].to_string(),
+            value: vec![sub_benchmark_caps[3].parse::<f64>().unwrap()],
+            group: benchmark.group.clone(),
+            plot_group: plot_group.clone(),
+        };
+
+        // Save the first iteration
+        parse_benchmark_results.push(benchmark_result);
+    }
+
+    // Run the benchmark the specified number of times. Subtract one, since we already ran the benchmark once.
+    for _ in 0..benchmark.iterations - 1 {
         // Run the benchmark command and return the result.
-        let output_str = run_benchmark_command(benchmark);
+        output_str = run_benchmark_command(benchmark);
 
-        // Split the output string by the separator, to get the individual sub-benchmarks
-        //
-        // Example string:
-        //  /*BENCHMARK OUTPUT*/
-        //  name: bench_sleep1
-        //  unit: s
-        //  value: 10.0
-        //  /*BENCHMARK OUTPUT END*/
-        //  /*BENCHMARK OUTPUT*/
-        //  name: bench_sleep2
-        //  unit: s
-        //  value: 20.0
-        //  /*BENCHMARK OUTPUT END*/
         for sub_benchmark_caps in format.captures_iter(&output_str) {
             // Check if the sub-benchmark has a plot group, if not, use the benchmark plot group
             let mut plot_group = benchmark.plot_group.clone();
@@ -219,38 +252,48 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
                 plot_group: plot_group.clone(),
             };
 
-            // If this isn't the first iteration, add the value to the existing benchmark
-            if i != 0 {
-                for result in &mut parsed_benchmark_results {
-                    if result.name == benchmark_result.name {
-                        let dev_last_avg = benchmark_result.value - result.value;
-
-                        // Average the results
-                        result.value += (sub_benchmark_caps[3].parse::<f64>().unwrap()
-                            - result.value)
-                            / i as f64;
-
-                        let dev_new_avg = benchmark_result.value - result.value;
-
-                        // Calculate the new standard deviation step
-                        result.range = (result.range + dev_last_avg * dev_new_avg).sqrt();
-                    }
+            // Append the result to the corresponding benchmark in the results vector
+            for result in &mut parse_benchmark_results {
+                if result.name == sub_benchmark_caps[1].to_string() {
+                    result.value.push(benchmark_result.value);
                 }
-            }
-
-            // If this is the first iteration, add the benchmark result to the vector, to register a "new" benchmark
-            // Also check if the benchmark has a name, if not, don't add it
-            if i == 0 && benchmark_result.name != "" {
-                parsed_benchmark_results.push(benchmark_result);
             }
         }
     }
 
-    for result in &mut parsed_benchmark_results {
-        result.range = (result.range / (benchmark.iterations) as f64).sqrt();
+    // Convert the raw benchmark results to BenchmarkResult structs
+    let mut processed_benchmark_results: Vec<BenchmarkResult> = Vec::new();
+    for result in parse_benchmark_results {
+        let mut average_time = 0.0;
+        let mut times: Vec<f64> = Vec::new();
+
+        // Calculate the average time and standard deviation
+        for time in &result.value {
+            average_time += time / benchmark.iterations as f64;
+            times.push(*time);
+        }
+
+        let mut variance = 0.0;
+        for time in &times {
+            variance += (time - average_time).powi(2);
+        }
+        let standard_deviation = (variance / benchmark.iterations as f64).sqrt();
+
+        // Create a BenchmarkResult struct with the parsed data
+        let benchmark_result: BenchmarkResult = BenchmarkResult {
+            name: result.name,
+            unit: result.unit,
+            value: average_time,
+            group: result.group,
+            range: standard_deviation,
+            plot_group: result.plot_group,
+        };
+
+        // Append the result to the results vector
+        processed_benchmark_results.push(benchmark_result);
     }
 
-    parsed_benchmark_results
+    processed_benchmark_results
 }
 
 fn run_benchmark_command(benchmark: &Benchmark) -> String {

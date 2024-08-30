@@ -297,7 +297,9 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
 }
 
 fn run_benchmark_command(benchmark: &Benchmark) -> String {
-    let mut child = Command::new("sh")
+    let mut child = Command::new("nice")
+        .arg("-n0")
+        .arg("sh")
         .arg("-c")
         .arg(&benchmark.command)
         .stdout(Stdio::piped())

@@ -327,7 +327,7 @@ fn run_benchmark_command(benchmark: &Benchmark) -> String {
                     stdout, stderr
                 );
                 eprintln!("Exit code: {}", status.code().unwrap());
-                //panic!("Command failed");
+                panic!("Command failed");
             }
             stdout
         }

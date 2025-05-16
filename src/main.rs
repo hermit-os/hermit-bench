@@ -293,6 +293,11 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
         processed_benchmark_results.push(benchmark_result);
     }
 
+    if processed_benchmark_results.len() == 0 {
+        println!("Error could not find result in output\n: {output_str}");
+        panic!("Benchmark did not return any results");
+    }
+
     processed_benchmark_results
 }
 

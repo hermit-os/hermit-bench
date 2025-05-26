@@ -186,11 +186,11 @@ fn main() -> io::Result<()> {
 
     // Write the results to the output file.
     let bench_json_str = serde_json::to_string_pretty(&results).unwrap();
-    let output_path = format!("{}/{}", relative_path, "results.json");
+    let output_path = format!("{}/{}", relative_path, "../results.json");
 
     std::fs::write(output_path, &bench_json_str).unwrap();
 
-    println!("Results written to results.json");
+    println!("Results written to ../results.json");
 
     Ok(())
 }

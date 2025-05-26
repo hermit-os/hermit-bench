@@ -75,14 +75,32 @@ struct Benchmark {
 fn main() -> io::Result<()> {
     // Get the input file from the command line arguments.
     let args: Vec<String> = env::args().collect();
+    
+    if args.len() < 5 {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "Usage: <program> <input_file> <relative_path> <build_command> <benchmark_build>"
+        ));
+    }
+    
     let input_file = &args[1];
     let relative_path = &args[2];
-    let build_command = &args[3..].join(" ");
+    let build_command = &args[3];
+
+    let benchmark_build: bool = match args[4].to_lowercase().as_str() {
+        "true" => true,
+        "false" => false,
+        _ => {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "Invalid value for benchmark_build",
+            ));
+        }
+    };
 
     // Initialize the results vector.
     let mut results: Vec<BenchmarkResult> = Vec::new();
 
-    // Run the build command. And treat it as a benchmark.
     let build_benchmark = Benchmark {
         name: "Build".to_string(),
         command: format!("cd {0} && {1}", relative_path, build_command),
@@ -94,10 +112,17 @@ fn main() -> io::Result<()> {
         absolute_path: false,
     };
 
-    let build_result = external_time_benchmark(&build_benchmark, false);
+    if benchmark_build {
+        // Run the build command and treat it as a benchmark.
+        let build_result = external_time_benchmark(&build_benchmark, false);
 
-    // Add the results to the overall results vector.
-    results.push(build_result);
+        // Add the results to the overall results vector.
+        results.push(build_result);
+
+    } else {
+        // If the build benchmark is not needed, just run the command to build the project.
+        run_benchmark_command(&build_benchmark);
+    }
 
     // Construct the full path to the input file.
     let input_file = &format!("{}{}", relative_path, input_file);
@@ -207,7 +232,6 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
     //  value: 20.0
     //  plot_group:
     //  /*BENCHMARK OUTPUT END*/
-
     // Run the benchmark for the first time to get all the benchmarks
     let mut output_str = run_benchmark_command(benchmark);
     for sub_benchmark_caps in format.captures_iter(&output_str) {

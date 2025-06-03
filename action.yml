@@ -12,6 +12,10 @@ inputs:
   build-command:
     description: 'Command to build the project'
     required: true
+  benchmark-build:
+    description: 'Whether to benchmark the build process'
+    default: 'false'
+    required: false
 
 outputs:
   result-file:
@@ -23,15 +27,14 @@ runs:
   steps:
     - name: Build
       run: |
-        cd ../../_actions/hermit-os/hermit-bench/main
-        ln -s ../../../../hermit-rs/hermit-rs/rust-toolchain.toml rust-toolchain.toml
+        cd ../../_actions/hermit-os/hermit-bench/kernel
+        ln -s ../../../../kernel/kernel/rust-toolchain.toml rust-toolchain.toml
         cargo build --package hermit-bench
-        cd ../../../../hermit-rs/hermit-rs
       shell: bash
     - name: Run benchmarks
       id: run-bench
       run: |
-        cd ../../_actions/hermit-os/hermit-bench/main
-        cargo run ${{ inputs.benchmark-file }} ../../../../hermit-rs/hermit-rs ${{ inputs.build-command }}
-        echo "results-path=./results.json" >> $GITHUB_OUTPUT
+        cd ../../_actions/hermit-os/hermit-bench/kernel
+        cargo run ${{ inputs.benchmark-file }} ../../../../kernel/kernel "${{ inputs.build-command }}" ${{ inputs.benchmark-build }}
+        echo "results-path=../results.json" >> $GITHUB_OUTPUT
       shell: bash

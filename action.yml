@@ -27,14 +27,14 @@ runs:
   steps:
     - name: Build
       run: |
-        cd ../../_actions/hermit-os/hermit-bench/kernel
+        cd ../../_actions/hermit-os/hermit-bench/main
         ln -s ../../../../kernel/kernel/rust-toolchain.toml rust-toolchain.toml
         cargo build --package hermit-bench
       shell: bash
     - name: Run benchmarks
       id: run-bench
       run: |
-        cd ../../_actions/hermit-os/hermit-bench/kernel
+        cd ../../_actions/hermit-os/hermit-bench/main
         cargo run ${{ inputs.benchmark-file }} ../../../../kernel/kernel "${{ inputs.build-command }}" ${{ inputs.benchmark-build }}
         echo "results-path=../results.json" >> $GITHUB_OUTPUT
       shell: bash

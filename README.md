@@ -4,6 +4,8 @@ This repository is an action to benchmark [hermit-os](https://github.com/hermit-
 
 ## Inputs
 It requires `benchmark-file` as an input, which contains the path to a JSON benchmark file. 
+It also requires `build-command`, which is the command to build the project. 
+Optionally, you can set `benchmark-build` to `true` to benchmark the build process.
 
 ## JSON file format
 The JSON input file might look like this:

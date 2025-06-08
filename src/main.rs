@@ -162,7 +162,11 @@ fn main() -> io::Result<()> {
             // Before command, change the working directory to the relative path
             if benchmark.absolute_path == false {
                 benchmark.command = format!("cd {0} && {1}", relative_path, benchmark.command);
-                benchmark.pre_run_command = format!("cd {0} && {1}", relative_path, benchmark.pre_run_command);
+
+                if benchmark.pre_run_command != "" {
+                    // If there is a pre-run command, adapt it to the relative path
+                    benchmark.pre_run_command = format!("cd {0} && {1}", relative_path, benchmark.pre_run_command);
+                }
             }
             if benchmark.external_time == true {
                 // External time benchmark
@@ -223,8 +227,10 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
         benchmark.name, benchmark.command
     );
 
-    run_pre_run_command(benchmark);
-
+    if benchmark.pre_run_command != "" {
+        run_pre_run_command(benchmark);
+    }
+    
     // Run unlogged benchmark, to warm up the system
     run_benchmark_command(benchmark);
     run_benchmark_command(benchmark);

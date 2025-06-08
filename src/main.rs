@@ -56,20 +56,30 @@ fn default_plot_group() -> String {
 #[derive(Serialize, Deserialize, Debug)]
 struct Benchmark {
     name: String,
+
     #[serde(default)]
     command: String,
+
     #[serde(default)]
     path: String,
+
     #[serde(default = "default_iterations")]
     iterations: u32, // The number of iterations to run the benchmark. Default is 1.
+
     #[serde(default = "bool::default")] // Default is false
     external_time: bool, // If true, the benchmark will be run with the external time command
+
     #[serde(default = "default_group")]
     group: String,
+
     #[serde(default = "default_plot_group")]
     plot_group: String,
+
     #[serde(default = "bool::default")] // Default is false
     absolute_path: bool, // If true, the path will not get the relative path added
+
+    #[serde(default = "String::new")]
+    pre_run_command: String,
 }
 
 fn main() -> io::Result<()> {
@@ -110,6 +120,7 @@ fn main() -> io::Result<()> {
         group: "General".to_string(),
         plot_group: "none".to_string(),
         absolute_path: false,
+        pre_run_command: "".to_string(),
     };
 
     if benchmark_build {
@@ -151,6 +162,7 @@ fn main() -> io::Result<()> {
             // Before command, change the working directory to the relative path
             if benchmark.absolute_path == false {
                 benchmark.command = format!("cd {0} && {1}", relative_path, benchmark.command);
+                benchmark.pre_run_command = format!("cd {0} && {1}", relative_path, benchmark.pre_run_command);
             }
             if benchmark.external_time == true {
                 // External time benchmark
@@ -210,6 +222,8 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
         "Running benchmark {0}: {1}",
         benchmark.name, benchmark.command
     );
+
+    run_pre_run_command(benchmark);
 
     // Run unlogged benchmark, to warm up the system
     run_benchmark_command(benchmark);
@@ -379,6 +393,39 @@ fn run_benchmark_command(benchmark: &Benchmark) -> String {
                 stdout, stderr
             );
             panic!("Command timed out");
+        }
+    }
+}
+
+fn run_pre_run_command(benchmark: &Benchmark) {
+    if benchmark.pre_run_command != "" {
+        println!(
+            "Running pre-run command for benchmark {0}: {1}",
+            benchmark.name, benchmark.pre_run_command
+        );
+        let mut child = Command::new("sh")
+            .arg("-c")
+            .arg(&benchmark.pre_run_command)
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .expect("failed to execute pre-run command");
+
+        match child.wait_timeout(TIMEOUT).unwrap() {
+            Some(status) => {
+                if !status.success() {
+                    let mut stderr = String::new();
+                    if let Some(mut stderr_handle) = child.stderr.take() {
+                        std::io::Read::read_to_string(&mut stderr_handle, &mut stderr).unwrap();
+                    }
+                    eprintln!("Pre-run command failed with error: {}", stderr);
+                    panic!("Pre-run command failed");
+                }
+            }
+            None => {
+                child.kill().unwrap();
+                panic!("Pre-run command timed out");
+            }
         }
     }
 }

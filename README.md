@@ -35,6 +35,7 @@ The attributes are:
 | `path`          | The path to the executable                    | ""    |
 | `iterations`    | The number of times to execute the command    | 1     |
 | `external_time` | Measure the time of the command externally    | false |
+| `pre_run_command` | Command to run before the main command        | ""    |
 
 
 As can be seen, both `command` and `path` are optional. If `command` is set, it will be executed `iterations` times. If `path` is set, the size of the file at the given path will be measured (exactly one time regardless of `iterations`).

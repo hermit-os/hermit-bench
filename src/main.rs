@@ -412,7 +412,7 @@ fn build_binary(bin: String, manifest_path: String, relative_path: String) -> Be
         manifest_path: manifest_path.clone(),
         command: format!(
             "cd {0} && cargo build --manifest-path {1} --bin {2} \
-            -Zbuild-std=core,alloc,std,panic_abort -Zbuild-std-features=compiler-builtins-mem \
+            -Zbuild-std=core,alloc,std,panic_abort \
             --target x86_64-unknown-hermit \
             --release",
             relative_path, manifest_path, bin

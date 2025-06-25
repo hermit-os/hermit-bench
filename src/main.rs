@@ -57,6 +57,7 @@ fn default_plot_group() -> String {
 struct Benchmark {
     name: String,
     bin: String,
+    manifest_path: String, // The path to the Cargo.toml file of the benchmark binary.
 
     #[serde(default)]
     command: String,
@@ -109,15 +110,21 @@ fn main() -> io::Result<()> {
     // Run the benchmarks.
     for benchmark in &mut benchmarks {
         // Build the benchmark, only if the build process is not in results
-        if !results.iter().any(|r| r.name == format!("{} File Size", benchmark.bin)) {
-
+        if !results
+            .iter()
+            .any(|r| r.name == format!("{} File Size", benchmark.bin))
+        {
             // Clear the target directory to ensure a clean build, but only if it exists
             let target_dir = format!("{}/target", relative_path);
             if std::path::Path::new(&target_dir).exists() {
                 std::fs::remove_dir_all(&target_dir).expect("Failed to clear target directory");
             }
 
-            let build_time = build_binary(benchmark.bin.clone(), relative_path.to_string());
+            let build_time = build_binary(
+                benchmark.bin.clone(),
+                benchmark.manifest_path.clone(),
+                relative_path.clone(),
+            );
             results.push(build_time);
 
             let file_size = get_size(benchmark, relative_path.to_string());
@@ -392,17 +399,17 @@ fn run_pre_run_command(benchmark: &Benchmark) {
     }
 }
 
-fn build_binary(bin: String, relative_path: String) -> BenchmarkResult {
+fn build_binary(bin: String, manifest_path: String, relative_path: String) -> BenchmarkResult {
     let build_benchmark = Benchmark {
         name: format!("{} Build Time", bin.clone()),
         bin: bin.clone(),
+        manifest_path: manifest_path.clone(),
         command: format!(
-            "cd {0} && cargo build --bin {1} \
+            "cd {0} && cargo build --manifest-path {1} --bin {2} \
             -Zbuild-std=core,alloc,std,panic_abort -Zbuild-std-features=compiler-builtins-mem \
             --target x86_64-unknown-hermit \
             --release",
-            relative_path,
-            bin
+            relative_path, manifest_path, bin
         ),
         iterations: 1,
         external_time: true,
@@ -417,8 +424,7 @@ fn build_binary(bin: String, relative_path: String) -> BenchmarkResult {
 fn get_size(benchmark: &Benchmark, relative_path: String) -> BenchmarkResult {
     let metadata = std::fs::metadata(format!(
         "{}/target/x86_64-unknown-hermit/release/{}",
-        relative_path,
-        benchmark.bin
+        relative_path, benchmark.bin
     ))
     .expect("File not found or inaccessible");
     let size = metadata.len() as f64 / (1024 * 1024) as f64; // Convert to MB

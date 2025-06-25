@@ -185,14 +185,14 @@ fn parse_benchmarks(input_file: &String) -> Result<Vec<Benchmark>, Box<dyn Error
 }
 
 fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
+    if benchmark.pre_run_command != "" {
+        run_pre_run_command(benchmark);
+    }
+
     println!(
         "Running benchmark {0}: {1}",
         benchmark.name, benchmark.command
     );
-
-    if benchmark.pre_run_command != "" {
-        run_pre_run_command(benchmark);
-    }
 
     // Run unlogged benchmark, to warm up the system
     run_benchmark_command(benchmark);
@@ -372,6 +372,7 @@ fn run_pre_run_command(benchmark: &Benchmark) {
             "Running pre-run command for benchmark {0}: {1}",
             benchmark.name, benchmark.pre_run_command
         );
+
         let mut child = Command::new("sh")
             .arg("-c")
             .arg(&benchmark.pre_run_command)
@@ -396,6 +397,11 @@ fn run_pre_run_command(benchmark: &Benchmark) {
                 panic!("Pre-run command timed out");
             }
         }
+
+        println!(
+            "Pre-run command for benchmark {0} completed successfully.",
+            benchmark.name
+        );
     }
 }
 

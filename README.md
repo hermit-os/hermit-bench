@@ -4,8 +4,6 @@ This repository is an action to benchmark [hermit-os](https://github.com/hermit-
 
 ## Inputs
 It requires `benchmark-file` as an input, which contains the path to a JSON benchmark file. 
-It also requires `build-command`, which is the command to build the project. 
-Optionally, you can set `benchmark-build` to `true` to benchmark the build process.
 
 ## JSON file format
 The JSON input file might look like this:
@@ -31,8 +29,8 @@ The attributes are:
 | Attribute  | Description | Default |
 |---|---|---|
 | `name`          | The name of the test                          | MUST BE SET AND UNIQUE |
+| `bin`          | The name of the required binary                | MUST BE SET |
 | `command`       | The command to execute                        | ""    |
-| `path`          | The path to the executable                    | ""    |
 | `iterations`    | The number of times to execute the command    | 1     |
 | `external_time` | Measure the time of the command externally    | false |
 | `pre_run_command` | Command to run before the main command        | ""    |

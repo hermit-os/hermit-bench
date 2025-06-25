@@ -9,13 +9,6 @@ inputs:
   benchmark-file:
     description: 'Path to the benchmark JSON file'
     required: true
-  build-command:
-    description: 'Command to build the project'
-    required: true
-  benchmark-build:
-    description: 'Whether to benchmark the build process'
-    default: 'false'
-    required: false
 
 outputs:
   result-file:
@@ -35,6 +28,6 @@ runs:
       id: run-bench
       run: |
         cd ../../_actions/hermit-os/hermit-bench/main
-        cargo run ${{ inputs.benchmark-file }} ../../../../kernel/kernel "${{ inputs.build-command }}" ${{ inputs.benchmark-build }}
+        cargo run ${{ inputs.benchmark-file }} ../../../../kernel/kernel
         echo "results-path=../results.json" >> $GITHUB_OUTPUT
       shell: bash

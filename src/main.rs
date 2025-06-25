@@ -56,12 +56,10 @@ fn default_plot_group() -> String {
 #[derive(Serialize, Deserialize, Debug)]
 struct Benchmark {
     name: String,
+    bin: String,
 
     #[serde(default)]
     command: String,
-
-    #[serde(default)]
-    path: String,
 
     #[serde(default = "default_iterations")]
     iterations: u32, // The number of iterations to run the benchmark. Default is 1.
@@ -75,9 +73,6 @@ struct Benchmark {
     #[serde(default = "default_plot_group")]
     plot_group: String,
 
-    #[serde(default = "bool::default")] // Default is false
-    absolute_path: bool, // If true, the path will not get the relative path added
-
     #[serde(default = "String::new")]
     pre_run_command: String,
 }
@@ -85,55 +80,19 @@ struct Benchmark {
 fn main() -> io::Result<()> {
     // Get the input file from the command line arguments.
     let args: Vec<String> = env::args().collect();
-    
-    if args.len() < 5 {
+
+    if args.len() < 3 {
         return Err(io::Error::new(
             io::ErrorKind::InvalidInput,
-            "Usage: <program> <input_file> <relative_path> <build_command> <benchmark_build>"
+            "Usage: <program> <input_file> <relative_path>",
         ));
     }
-    
+
     let input_file = &args[1];
     let relative_path = &args[2];
-    let build_command = &args[3];
-
-    let benchmark_build: bool = match args[4].to_lowercase().as_str() {
-        "true" => true,
-        "false" => false,
-        _ => {
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidInput,
-                "Invalid value for benchmark_build",
-            ));
-        }
-    };
 
     // Initialize the results vector.
     let mut results: Vec<BenchmarkResult> = Vec::new();
-
-    let build_benchmark = Benchmark {
-        name: "Build".to_string(),
-        command: format!("cd {0} && {1}", relative_path, build_command),
-        iterations: 1,
-        path: "".to_string(),
-        external_time: true,
-        group: "General".to_string(),
-        plot_group: "none".to_string(),
-        absolute_path: false,
-        pre_run_command: "".to_string(),
-    };
-
-    if benchmark_build {
-        // Run the build command and treat it as a benchmark.
-        let build_result = external_time_benchmark(&build_benchmark, false);
-
-        // Add the results to the overall results vector.
-        results.push(build_result);
-
-    } else {
-        // If the build benchmark is not needed, just run the command to build the project.
-        run_benchmark_command(&build_benchmark);
-    }
 
     // Construct the full path to the input file.
     let input_file = &format!("{}{}", relative_path, input_file);
@@ -149,54 +108,51 @@ fn main() -> io::Result<()> {
 
     // Run the benchmarks.
     for benchmark in &mut benchmarks {
-        // Check if there is a command or a path, if not it's an invalid benchmark
-        if benchmark.command == "" && benchmark.path == "" {
-            eprintln!("Invalid benchmark: {0}", benchmark.name);
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidInput,
-                "Invalid benchmark",
-            ));
+        // Build the benchmark, only if the build process is not in results
+        if !results.iter().any(|r| r.name == format!("{} File Size", benchmark.bin)) {
+
+            // Clear the target directory to ensure a clean build, but only if it exists
+            let target_dir = format!("{}/target", relative_path);
+            if std::path::Path::new(&target_dir).exists() {
+                std::fs::remove_dir_all(&target_dir).expect("Failed to clear target directory");
+            }
+
+            let build_time = build_binary(benchmark.bin.clone(), relative_path.to_string());
+            results.push(build_time);
+
+            let file_size = get_size(benchmark, relative_path.to_string());
+            results.push(file_size);
         }
-        // If it's a command benchmark.
-        else if benchmark.command != "" {
-            // Before command, change the working directory to the relative path
-            if benchmark.absolute_path == false {
-                benchmark.command = format!("cd {0} && {1}", relative_path, benchmark.command);
 
-                if benchmark.pre_run_command != "" {
-                    // If there is a pre-run command, adapt it to the relative path
-                    benchmark.pre_run_command = format!("cd {0} && {1}", relative_path, benchmark.pre_run_command);
-                }
-            }
-            if benchmark.external_time == true {
-                // External time benchmark
-                let benchmark_result = external_time_benchmark(benchmark, true);
+        // Before command, change the working directory to the relative path
+        benchmark.command = format!("cd {0} && {1}", relative_path, benchmark.command);
 
-                // Serialize the results to a JSON string for debugging.
-                let results_str = serde_json::to_string_pretty(&benchmark_result).unwrap();
-                println!("Results: {results_str}");
+        if benchmark.pre_run_command != "" {
+            // If there is a pre-run command, adapt it to the relative path
+            benchmark.pre_run_command =
+                format!("cd {0} && {1}", relative_path, benchmark.pre_run_command);
+        }
 
-                // Add the results to the overall results vector.
-                results.push(benchmark_result);
-            } else {
-                // Internal time benchmark
-                let benchmark_result = run_benchmark(benchmark);
+        if benchmark.external_time == true {
+            // External time benchmark
+            let benchmark_result = external_time_benchmark(benchmark, true);
 
-                // Serialize the results to a JSON string for debugging.
-                let results_str = serde_json::to_string_pretty(&benchmark_result).unwrap();
-                println!("Results: {results_str}");
+            // Serialize the results to a JSON string for debugging.
+            let results_str = serde_json::to_string_pretty(&benchmark_result).unwrap();
+            println!("Results: {results_str}");
 
-                // Add the results to the overall results vector.
-                results.extend(benchmark_result);
-            }
-        } else {
-            // Adapt relative path
-            if benchmark.absolute_path == false {
-                benchmark.path = format!("{}/{}", relative_path, benchmark.path);
-            }
-            println!("Determining size of file at {0}", benchmark.path);
-            let benchmark_result = get_size(benchmark);
+            // Add the results to the overall results vector.
             results.push(benchmark_result);
+        } else {
+            // Internal time benchmark
+            let benchmark_result = run_benchmark(benchmark);
+
+            // Serialize the results to a JSON string for debugging.
+            let results_str = serde_json::to_string_pretty(&benchmark_result).unwrap();
+            println!("Results: {results_str}");
+
+            // Add the results to the overall results vector.
+            results.extend(benchmark_result);
         }
     }
 
@@ -230,7 +186,7 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
     if benchmark.pre_run_command != "" {
         run_pre_run_command(benchmark);
     }
-    
+
     // Run unlogged benchmark, to warm up the system
     run_benchmark_command(benchmark);
     run_benchmark_command(benchmark);
@@ -436,17 +392,44 @@ fn run_pre_run_command(benchmark: &Benchmark) {
     }
 }
 
-fn get_size(benchmark: &Benchmark) -> BenchmarkResult {
-    let metadata = std::fs::metadata(&benchmark.path).expect("File not found or inaccessible");
+fn build_binary(bin: String, relative_path: String) -> BenchmarkResult {
+    let build_benchmark = Benchmark {
+        name: format!("{} Build Time", bin.clone()),
+        bin: bin.clone(),
+        command: format!(
+            "cd {0} && cargo build --bin {1} \
+            -Zbuild-std=core,alloc,std,panic_abort -Zbuild-std-features=compiler-builtins-mem \
+            --target x86_64-unknown-hermit \
+            --release",
+            relative_path,
+            bin
+        ),
+        iterations: 1,
+        external_time: true,
+        group: "Build".to_string(),
+        plot_group: "none".to_string(),
+        pre_run_command: "".to_string(),
+    };
+
+    external_time_benchmark(&build_benchmark, false)
+}
+
+fn get_size(benchmark: &Benchmark, relative_path: String) -> BenchmarkResult {
+    let metadata = std::fs::metadata(format!(
+        "{}/target/x86_64-unknown-hermit/release/{}",
+        relative_path,
+        benchmark.bin
+    ))
+    .expect("File not found or inaccessible");
     let size = metadata.len() as f64 / (1024 * 1024) as f64; // Convert to MB
 
     BenchmarkResult {
-        name: benchmark.name.clone(),
+        name: format!("{} File Size", benchmark.bin.clone()),
         unit: "MB".to_string(),
         value: size,
-        group: benchmark.group.clone(),
+        group: "File Size".to_string(),
         range: 0.0,
-        plot_group: benchmark.plot_group.clone(),
+        plot_group: "none".to_string(),
     }
 }
 

@@ -3,26 +3,24 @@
 This repository is an action to benchmark [hermit-os](https://github.com/hermit-os/).
 
 ## Inputs
-It requires `benchmark-file` as an input, which contains the path to a JSON benchmark file. 
+It requires `benchmark-file` as an input, which contains the path to a yaml benchmark file. 
 
-## JSON file format
-The JSON input file might look like this:
-```json
-[
-  {
-    "name": "dummy test",
-    "command": "echo 'name: dummy test\nunit: n\nvalue: 1'",
-    "iterations": 10
-  },
-  {
-    "name": "other dummy test",
-    "command": "echo 'name: other dummy test\nunit: n\nvalue: 10'",
-  },
-  {
-    "name": "size of rusty_demo",
-    "path": "/path/to/rusty_demo"
-  }
-]
+## YAML file format
+The yaml input file might look like this:
+```yaml
+- name: test
+  bin: rusty_demo
+  command: cargo run --release --bin rusty_demo
+  iterations: 10
+  group: General
+  plot_group: Demo results
+  manifest_path: examples/demo/Cargo.toml
+- name: other test
+  bin: other_demo
+  pre_run_command: ls -l examples/other_demo
+  command: cargo run --release --bin other_demo
+  group: General
+  plot_group: Other test results
 ```
 
 The attributes are:
@@ -34,7 +32,9 @@ The attributes are:
 | `command`         | The command to execute                        | ""    |
 | `iterations`      | The number of times to execute the command    | 1     |
 | `external_time`   | Measure the time of the command externally    | false |
-| `pre_run_command` | Command to run before the main command      | ""    |
+| `pre_run_command` | Command to run before the main command        | ""    |
+| `group`           | The group to which the benchmark belongs      | "General"    |
+| `plot_group`      | The group for plotting the results            | "none"    |
 
 
 As can be seen, both `command` and `path` are optional. If `command` is set, it will be executed `iterations` times. If `path` is set, the size of the file at the given path will be measured (exactly one time regardless of `iterations`).

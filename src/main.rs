@@ -48,7 +48,7 @@ fn default_plot_group() -> String {
     "none".to_string()
 }
 
-// Input format for the hermit JSON file
+// Input format for the hermit yaml file
 //
 // A benchmark can either use a path to a file or a command to run.
 // If a path is provided, the benchmark will determine the size of the file.
@@ -103,7 +103,7 @@ fn main() -> io::Result<()> {
 
     let mut benchmarks = parse_benchmarks(input_file).unwrap();
 
-    let loaded_benchmarks_str = serde_json::to_string_pretty(&benchmarks).unwrap();
+    let loaded_benchmarks_str = serde_yaml::to_string(&benchmarks).unwrap();
     println!("Loaded benchmarks:");
     println!("{loaded_benchmarks_str}");
 
@@ -179,7 +179,7 @@ fn parse_benchmarks(input_file: &String) -> Result<Vec<Benchmark>, Box<dyn Error
     let reader = BufReader::new(file);
 
     // Parse the JSON file into a Benchmark struct.
-    let benchmarks: Vec<Benchmark> = serde_json::from_reader(reader)?;
+    let benchmarks: Vec<Benchmark> = serde_yaml::from_reader(reader)?;
 
     Ok(benchmarks)
 }

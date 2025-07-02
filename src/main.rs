@@ -96,7 +96,7 @@ fn main() -> io::Result<()> {
     let mut results: Vec<BenchmarkResult> = Vec::new();
 
     // Construct the full path to the input file.
-    let input_file = &format!("{}{}", relative_path, input_file);
+    let input_file = &format!("{}/{}", relative_path, input_file);
 
     // Parse the benchmarks from the input file.
     println!("Parsing benchmarks from {input_file}:");

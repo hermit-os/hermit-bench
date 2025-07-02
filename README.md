@@ -14,7 +14,7 @@ The yaml input file might look like this:
   iterations: 10
   group: General
   plot_group: Demo results
-  manifest_path: examples/demo/Cargo.toml
+  hermit_rs_manifest_path: examples/demo/Cargo.toml
 - name: other test
   bin: other_demo
   pre_run_command: ls -l examples/other_demo
@@ -28,7 +28,7 @@ The attributes are:
 |---|---|---|
 | `name`            | The name of the test                          | MUST BE SET AND UNIQUE |
 | `bin`             | The name of the required binary               | MUST BE SET |
-| `manifest_path`   | The path to the Cargo.toml                    | MUST BE SET |
+| `hermit_rs_manifest_path`   | The path to the Cargo.toml                    | MUST BE SET |
 | `command`         | The command to execute                        | ""    |
 | `iterations`      | The number of times to execute the command    | 1     |
 | `external_time`   | Measure the time of the command externally    | false |

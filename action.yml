@@ -29,5 +29,5 @@ runs:
       run: |
         cd ../../_actions/hermit-os/hermit-bench/main
         cargo run ${{ inputs.benchmark-file }} ../../../../kernel/kernel
-        echo "results-path=../results.json" >> $GITHUB_OUTPUT
+        echo "results-path=results.json" >> $GITHUB_OUTPUT
       shell: bash

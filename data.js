@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1751813012789,
+  "lastUpdate": 1751813014265,
   "repoUrl": "https://github.com/hermit-os/kernel",
   "entries": {
     "Benchmark": [
@@ -1772,6 +1772,86 @@ window.BENCHMARK_DATA = {
             "range": 4.87975053441215,
             "group": "General",
             "plot_group": "Multithreaded Pi Efficiency"
+          },
+          {
+            "name": "startup_benchmark Build Time",
+            "value": 73.153316898,
+            "unit": "s",
+            "range": 0,
+            "group": "Build",
+            "plot_group": "none"
+          },
+          {
+            "name": "startup_benchmark File Size",
+            "value": 0.8543701171875,
+            "unit": "MB",
+            "range": 0,
+            "group": "File Size",
+            "plot_group": "none"
+          },
+          {
+            "name": "1 core",
+            "value": 0.99277688912,
+            "unit": "s",
+            "range": 0.02394475872744363,
+            "group": "General",
+            "plot_group": "Startup Time"
+          },
+          {
+            "name": "2 cores",
+            "value": 1.0064972675200003,
+            "unit": "s",
+            "range": 0.018333099395607406,
+            "group": "General",
+            "plot_group": "Startup Time"
+          },
+          {
+            "name": "4 cores",
+            "value": 1.0031196818399999,
+            "unit": "s",
+            "range": 0.024754319832078066,
+            "group": "General",
+            "plot_group": "Startup Time"
+          },
+          {
+            "name": "multithreaded_benchmark Build Time",
+            "value": 71.563490589,
+            "unit": "s",
+            "range": 0,
+            "group": "Build",
+            "plot_group": "none"
+          },
+          {
+            "name": "multithreaded_benchmark File Size",
+            "value": 0.9557647705078125,
+            "unit": "MB",
+            "range": 0,
+            "group": "File Size",
+            "plot_group": "none"
+          },
+          {
+            "name": "2 Threads",
+            "value": 91.34039967804479,
+            "unit": "%",
+            "range": 5.307826125619554,
+            "group": "General",
+            "plot_group": "Multithreaded Pi Efficiency"
+          },
+          {
+            "name": "4 Threads",
+            "value": 62.74647133548873,
+            "unit": "%",
+            "range": 3.9560665299164652,
+            "group": "General",
+            "plot_group": "Multithreaded Pi Efficiency"
+          },
+          {
+            "name": "8 Threads",
+            "value": 42.62959694282763,
+            "unit": "%",
+            "range": 4.87975053441215,
+            "group": "General",
+            "plot_group": "Multithreaded Pi Efficiency"
           }
         ]
       },
@@ -2026,6 +2106,108 @@ window.BENCHMARK_DATA = {
             "range": 6.608358343794622,
             "group": "Mutex",
             "plot_group": "Mutex Stress Test Average Time per Iteration"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Martin Kröning",
+            "username": "mkroening",
+            "email": "mkroening@posteo.net"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "be0a653ebde4093fa25c4d217055af77e3bc53df",
+          "message": "Merge pull request #1799 from hermit-os/kernel_function\n\nrefactor: inline kernel_function macro to allow non-Copy arguments",
+          "timestamp": "2025-07-06T14:11:09Z",
+          "url": "https://github.com/hermit-os/kernel/commit/be0a653ebde4093fa25c4d217055af77e3bc53df"
+        },
+        "date": 1751813013679,
+        "tool": "hermit-bench",
+        "benches": [
+          {
+            "name": "startup_benchmark Build Time",
+            "value": 73.749347753,
+            "unit": "s",
+            "range": 0,
+            "group": "Build",
+            "plot_group": "none"
+          },
+          {
+            "name": "startup_benchmark File Size",
+            "value": 0.8544235229492188,
+            "unit": "MB",
+            "range": 0,
+            "group": "File Size",
+            "plot_group": "none"
+          },
+          {
+            "name": "1 core",
+            "value": 1.0102729131600001,
+            "unit": "s",
+            "range": 0.023490423305366687,
+            "group": "General",
+            "plot_group": "Startup Time"
+          },
+          {
+            "name": "2 cores",
+            "value": 0.99403871388,
+            "unit": "s",
+            "range": 0.028625919928919913,
+            "group": "General",
+            "plot_group": "Startup Time"
+          },
+          {
+            "name": "4 cores",
+            "value": 1.00867975128,
+            "unit": "s",
+            "range": 0.04063257881908313,
+            "group": "General",
+            "plot_group": "Startup Time"
+          },
+          {
+            "name": "multithreaded_benchmark Build Time",
+            "value": 73.765001484,
+            "unit": "s",
+            "range": 0,
+            "group": "Build",
+            "plot_group": "none"
+          },
+          {
+            "name": "multithreaded_benchmark File Size",
+            "value": 0.9564895629882812,
+            "unit": "MB",
+            "range": 0,
+            "group": "File Size",
+            "plot_group": "none"
+          },
+          {
+            "name": "2 Threads",
+            "value": 93.09006353179723,
+            "unit": "%",
+            "range": 6.522739823824688,
+            "group": "General",
+            "plot_group": "Multithreaded Pi Efficiency"
+          },
+          {
+            "name": "4 Threads",
+            "value": 64.83044402854932,
+            "unit": "%",
+            "range": 5.558405307373944,
+            "group": "General",
+            "plot_group": "Multithreaded Pi Efficiency"
+          },
+          {
+            "name": "8 Threads",
+            "value": 45.189560624928454,
+            "unit": "%",
+            "range": 3.2463112965684453,
+            "group": "General",
+            "plot_group": "Multithreaded Pi Efficiency"
           }
         ]
       }

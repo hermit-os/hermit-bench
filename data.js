@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1752142522862,
+  "lastUpdate": 1752146283519,
   "repoUrl": "https://github.com/hermit-os/kernel",
   "entries": {
     "Benchmark": [
@@ -7856,6 +7856,188 @@ window.BENCHMARK_DATA = {
             "range": 1.1043550153822816,
             "group": "Mutex",
             "plot_group": "Mutex Stress Test Average Time per Iteration"
+          },
+          {
+            "name": "startup_benchmark Build Time",
+            "value": 80.484575277,
+            "unit": "s",
+            "range": 0,
+            "group": "Build",
+            "plot_group": "none"
+          },
+          {
+            "name": "startup_benchmark File Size",
+            "value": 0.8761367797851562,
+            "unit": "MB",
+            "range": 0,
+            "group": "File Size",
+            "plot_group": "none"
+          },
+          {
+            "name": "1 core",
+            "value": 0.85507491136,
+            "unit": "s",
+            "range": 0.012874757986698801,
+            "group": "General",
+            "plot_group": "Startup Time"
+          },
+          {
+            "name": "2 cores",
+            "value": 0.8649406453199999,
+            "unit": "s",
+            "range": 0.01982807234399955,
+            "group": "General",
+            "plot_group": "Startup Time"
+          },
+          {
+            "name": "4 cores",
+            "value": 0.8685955226,
+            "unit": "s",
+            "range": 0.013492741737559615,
+            "group": "General",
+            "plot_group": "Startup Time"
+          },
+          {
+            "name": "multithreaded_benchmark Build Time",
+            "value": 81.588622202,
+            "unit": "s",
+            "range": 0,
+            "group": "Build",
+            "plot_group": "none"
+          },
+          {
+            "name": "multithreaded_benchmark File Size",
+            "value": 0.9762954711914062,
+            "unit": "MB",
+            "range": 0,
+            "group": "File Size",
+            "plot_group": "none"
+          },
+          {
+            "name": "2 Threads",
+            "value": 87.12478762521229,
+            "unit": "%",
+            "range": 6.415079065624367,
+            "group": "General",
+            "plot_group": "Multithreaded Pi Efficiency"
+          },
+          {
+            "name": "4 Threads",
+            "value": 43.48852005958012,
+            "unit": "%",
+            "range": 3.078331719420171,
+            "group": "General",
+            "plot_group": "Multithreaded Pi Efficiency"
+          },
+          {
+            "name": "8 Threads",
+            "value": 25.25516620266447,
+            "unit": "%",
+            "range": 1.411093597009817,
+            "group": "General",
+            "plot_group": "Multithreaded Pi Efficiency"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Martin Kröning",
+            "username": "mkroening",
+            "email": "mkroening@posteo.net"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "81a3d404d6461e99b44762948bf64875d5706e95",
+          "message": "Merge pull request #1800 from hermit-os/prepare-addrinfo\n\nrefactor(syscalls): prepare for getaddrinfo",
+          "timestamp": "2025-07-10T10:43:46Z",
+          "url": "https://github.com/hermit-os/kernel/commit/81a3d404d6461e99b44762948bf64875d5706e95"
+        },
+        "date": 1752146283013,
+        "tool": "hermit-bench",
+        "benches": [
+          {
+            "name": "startup_benchmark Build Time",
+            "value": 82.702142718,
+            "unit": "s",
+            "range": 0,
+            "group": "Build",
+            "plot_group": "none"
+          },
+          {
+            "name": "startup_benchmark File Size",
+            "value": 0.8761367797851562,
+            "unit": "MB",
+            "range": 0,
+            "group": "File Size",
+            "plot_group": "none"
+          },
+          {
+            "name": "1 core",
+            "value": 0.8262885178799999,
+            "unit": "s",
+            "range": 0.015353722227836377,
+            "group": "General",
+            "plot_group": "Startup Time"
+          },
+          {
+            "name": "2 cores",
+            "value": 0.85086667488,
+            "unit": "s",
+            "range": 0.02517495361406977,
+            "group": "General",
+            "plot_group": "Startup Time"
+          },
+          {
+            "name": "4 cores",
+            "value": 0.8560571410400001,
+            "unit": "s",
+            "range": 0.023541065142093955,
+            "group": "General",
+            "plot_group": "Startup Time"
+          },
+          {
+            "name": "multithreaded_benchmark Build Time",
+            "value": 82.727242862,
+            "unit": "s",
+            "range": 0,
+            "group": "Build",
+            "plot_group": "none"
+          },
+          {
+            "name": "multithreaded_benchmark File Size",
+            "value": 0.9762649536132812,
+            "unit": "MB",
+            "range": 0,
+            "group": "File Size",
+            "plot_group": "none"
+          },
+          {
+            "name": "2 Threads",
+            "value": 89.02408215499221,
+            "unit": "%",
+            "range": 8.280563297986248,
+            "group": "General",
+            "plot_group": "Multithreaded Pi Efficiency"
+          },
+          {
+            "name": "4 Threads",
+            "value": 43.13947896724301,
+            "unit": "%",
+            "range": 3.6380760621868093,
+            "group": "General",
+            "plot_group": "Multithreaded Pi Efficiency"
+          },
+          {
+            "name": "8 Threads",
+            "value": 24.821047072269295,
+            "unit": "%",
+            "range": 1.6209496107120362,
+            "group": "General",
+            "plot_group": "Multithreaded Pi Efficiency"
           }
         ]
       }

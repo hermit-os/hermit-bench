@@ -1,15 +1,14 @@
 use core::panic;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use std::process::{Command, Stdio};
-use std::time::Duration;
 use std::{
     env,
     error::Error,
     f64,
     fs::File,
     io::{self, BufReader},
-    time::Instant,
+    process::{Command, Stdio},
+    time::{Duration, Instant},
 };
 use wait_timeout::ChildExt;
 
@@ -134,13 +133,13 @@ fn main() -> io::Result<()> {
         // Before command, change the working directory to the relative path
         benchmark.command = format!("cd {0} && {1}", relative_path, benchmark.command);
 
-        if benchmark.pre_run_command != "" {
+        if !benchmark.pre_run_command.is_empty() {
             // If there is a pre-run command, adapt it to the relative path
             benchmark.pre_run_command =
                 format!("cd {0} && {1}", relative_path, benchmark.pre_run_command);
         }
 
-        if benchmark.external_time == true {
+        if benchmark.external_time {
             // External time benchmark
             let benchmark_result = external_time_benchmark(benchmark, true);
 
@@ -185,7 +184,7 @@ fn parse_benchmarks(input_file: &String) -> Result<Vec<Benchmark>, Box<dyn Error
 }
 
 fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
-    if benchmark.pre_run_command != "" {
+    if !benchmark.pre_run_command.is_empty() {
         run_pre_run_command(benchmark);
     }
 
@@ -261,7 +260,7 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
 
             // Append the result to the corresponding benchmark in the results vector
             for result in &mut parse_benchmark_results {
-                if result.name == sub_benchmark_caps[1].to_string() {
+                if result.name == sub_benchmark_caps[1] {
                     result.value.push(benchmark_result.value);
                 }
             }
@@ -300,7 +299,7 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
         processed_benchmark_results.push(benchmark_result);
     }
 
-    if processed_benchmark_results.len() == 0 {
+    if processed_benchmark_results.is_empty() {
         println!("Error could not find result in output\n: {output_str}");
         panic!("Benchmark did not return any results");
     }
@@ -367,7 +366,7 @@ fn run_benchmark_command(benchmark: &Benchmark) -> String {
 }
 
 fn run_pre_run_command(benchmark: &Benchmark) {
-    if benchmark.pre_run_command != "" {
+    if !benchmark.pre_run_command.is_empty() {
         println!(
             "Running pre-run command for benchmark {0}: {1}",
             benchmark.name, benchmark.pre_run_command
@@ -405,7 +404,11 @@ fn run_pre_run_command(benchmark: &Benchmark) {
     }
 }
 
-fn build_binary(bin: String, hermit_rs_manifest_path: String, relative_path: String) -> BenchmarkResult {
+fn build_binary(
+    bin: String,
+    hermit_rs_manifest_path: String,
+    relative_path: String,
+) -> BenchmarkResult {
     let build_benchmark = Benchmark {
         name: format!("{} Build Time", bin.clone()),
         bin: bin.clone(),

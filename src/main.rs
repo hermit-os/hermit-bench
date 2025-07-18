@@ -95,7 +95,7 @@ fn main() -> io::Result<()> {
     let mut results: Vec<BenchmarkResult> = Vec::new();
 
     // Construct the full path to the input file.
-    let input_file = &format!("{}/{}", relative_path, input_file);
+    let input_file = &format!("{relative_path}/{input_file}");
 
     // Parse the benchmarks from the input file.
     println!("Parsing benchmarks from {input_file}:");
@@ -114,7 +114,7 @@ fn main() -> io::Result<()> {
             .any(|r| r.name == format!("{} File Size", benchmark.bin))
         {
             // Clear the target directory to ensure a clean build, but only if it exists
-            let target_dir = format!("{}/target", relative_path);
+            let target_dir = format!("{relative_path}/target");
             if std::path::Path::new(&target_dir).exists() {
                 std::fs::remove_dir_all(&target_dir).expect("Failed to clear target directory");
             }
@@ -333,10 +333,7 @@ fn run_benchmark_command(benchmark: &Benchmark) -> String {
                 if let Some(mut stderr_handle) = child.stderr.take() {
                     std::io::Read::read_to_string(&mut stderr_handle, &mut stderr).unwrap();
                 }
-                eprintln!(
-                    "Command failed with output: \n{}\nAnd error: \n{}",
-                    stdout, stderr
-                );
+                eprintln!("Command failed with output: \n{stdout}\nAnd error: \n{stderr}");
                 eprintln!("Exit code: {}", status.code().unwrap());
                 panic!("Command failed");
             }
@@ -356,10 +353,7 @@ fn run_benchmark_command(benchmark: &Benchmark) -> String {
             if let Some(mut stderr_handle) = child.stderr.take() {
                 std::io::Read::read_to_string(&mut stderr_handle, &mut stderr).unwrap();
             }
-            eprintln!(
-                "Command failed with output: \n{}\nAnd error: \n{}",
-                stdout, stderr
-            );
+            eprintln!("Command failed with output: \n{stdout}\nAnd error: \n{stderr}");
             panic!("Command timed out");
         }
     }
@@ -387,7 +381,7 @@ fn run_pre_run_command(benchmark: &Benchmark) {
                     if let Some(mut stderr_handle) = child.stderr.take() {
                         std::io::Read::read_to_string(&mut stderr_handle, &mut stderr).unwrap();
                     }
-                    eprintln!("Pre-run command failed with error: {}", stderr);
+                    eprintln!("Pre-run command failed with error: {stderr}");
                     panic!("Pre-run command failed");
                 }
             }
@@ -414,11 +408,10 @@ fn build_binary(
         bin: bin.clone(),
         hermit_rs_manifest_path: hermit_rs_manifest_path.clone(),
         command: format!(
-            "cd {0} && cargo build --manifest-path {1} --bin {2} \
+            "cd {relative_path} && cargo build --manifest-path {hermit_rs_manifest_path} --bin {bin} \
             -Zbuild-std=core,alloc,std,panic_abort \
             --target x86_64-unknown-hermit \
-            --release",
-            relative_path, hermit_rs_manifest_path, bin
+            --release"
         ),
         iterations: 1,
         external_time: true,

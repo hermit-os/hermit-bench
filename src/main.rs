@@ -1,15 +1,14 @@
 use core::panic;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use std::process::{Command, Stdio};
-use std::time::Duration;
 use std::{
     env,
     error::Error,
     f64,
     fs::File,
     io::{self, BufReader},
-    time::Instant,
+    process::{Command, Stdio},
+    time::{Duration, Instant},
 };
 use wait_timeout::ChildExt;
 
@@ -96,7 +95,7 @@ fn main() -> io::Result<()> {
     let mut results: Vec<BenchmarkResult> = Vec::new();
 
     // Construct the full path to the input file.
-    let input_file = &format!("{}/{}", relative_path, input_file);
+    let input_file = &format!("{relative_path}/{input_file}");
 
     // Parse the benchmarks from the input file.
     println!("Parsing benchmarks from {input_file}:");
@@ -115,7 +114,7 @@ fn main() -> io::Result<()> {
             .any(|r| r.name == format!("{} File Size", benchmark.bin))
         {
             // Clear the target directory to ensure a clean build, but only if it exists
-            let target_dir = format!("{}/target", relative_path);
+            let target_dir = format!("{relative_path}/target");
             if std::path::Path::new(&target_dir).exists() {
                 std::fs::remove_dir_all(&target_dir).expect("Failed to clear target directory");
             }
@@ -134,13 +133,13 @@ fn main() -> io::Result<()> {
         // Before command, change the working directory to the relative path
         benchmark.command = format!("cd {0} && {1}", relative_path, benchmark.command);
 
-        if benchmark.pre_run_command != "" {
+        if !benchmark.pre_run_command.is_empty() {
             // If there is a pre-run command, adapt it to the relative path
             benchmark.pre_run_command =
                 format!("cd {0} && {1}", relative_path, benchmark.pre_run_command);
         }
 
-        if benchmark.external_time == true {
+        if benchmark.external_time {
             // External time benchmark
             let benchmark_result = external_time_benchmark(benchmark, true);
 
@@ -185,7 +184,7 @@ fn parse_benchmarks(input_file: &String) -> Result<Vec<Benchmark>, Box<dyn Error
 }
 
 fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
-    if benchmark.pre_run_command != "" {
+    if !benchmark.pre_run_command.is_empty() {
         run_pre_run_command(benchmark);
     }
 
@@ -261,7 +260,7 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
 
             // Append the result to the corresponding benchmark in the results vector
             for result in &mut parse_benchmark_results {
-                if result.name == sub_benchmark_caps[1].to_string() {
+                if result.name == sub_benchmark_caps[1] {
                     result.value.push(benchmark_result.value);
                 }
             }
@@ -300,7 +299,7 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
         processed_benchmark_results.push(benchmark_result);
     }
 
-    if processed_benchmark_results.len() == 0 {
+    if processed_benchmark_results.is_empty() {
         println!("Error could not find result in output\n: {output_str}");
         panic!("Benchmark did not return any results");
     }
@@ -334,10 +333,7 @@ fn run_benchmark_command(benchmark: &Benchmark) -> String {
                 if let Some(mut stderr_handle) = child.stderr.take() {
                     std::io::Read::read_to_string(&mut stderr_handle, &mut stderr).unwrap();
                 }
-                eprintln!(
-                    "Command failed with output: \n{}\nAnd error: \n{}",
-                    stdout, stderr
-                );
+                eprintln!("Command failed with output: \n{stdout}\nAnd error: \n{stderr}");
                 eprintln!("Exit code: {}", status.code().unwrap());
                 panic!("Command failed");
             }
@@ -357,17 +353,14 @@ fn run_benchmark_command(benchmark: &Benchmark) -> String {
             if let Some(mut stderr_handle) = child.stderr.take() {
                 std::io::Read::read_to_string(&mut stderr_handle, &mut stderr).unwrap();
             }
-            eprintln!(
-                "Command failed with output: \n{}\nAnd error: \n{}",
-                stdout, stderr
-            );
+            eprintln!("Command failed with output: \n{stdout}\nAnd error: \n{stderr}");
             panic!("Command timed out");
         }
     }
 }
 
 fn run_pre_run_command(benchmark: &Benchmark) {
-    if benchmark.pre_run_command != "" {
+    if !benchmark.pre_run_command.is_empty() {
         println!(
             "Running pre-run command for benchmark {0}: {1}",
             benchmark.name, benchmark.pre_run_command
@@ -388,7 +381,7 @@ fn run_pre_run_command(benchmark: &Benchmark) {
                     if let Some(mut stderr_handle) = child.stderr.take() {
                         std::io::Read::read_to_string(&mut stderr_handle, &mut stderr).unwrap();
                     }
-                    eprintln!("Pre-run command failed with error: {}", stderr);
+                    eprintln!("Pre-run command failed with error: {stderr}");
                     panic!("Pre-run command failed");
                 }
             }
@@ -405,17 +398,20 @@ fn run_pre_run_command(benchmark: &Benchmark) {
     }
 }
 
-fn build_binary(bin: String, hermit_rs_manifest_path: String, relative_path: String) -> BenchmarkResult {
+fn build_binary(
+    bin: String,
+    hermit_rs_manifest_path: String,
+    relative_path: String,
+) -> BenchmarkResult {
     let build_benchmark = Benchmark {
         name: format!("{} Build Time", bin.clone()),
         bin: bin.clone(),
         hermit_rs_manifest_path: hermit_rs_manifest_path.clone(),
         command: format!(
-            "cd {0} && cargo build --manifest-path {1} --bin {2} \
+            "cd {relative_path} && cargo build --manifest-path {hermit_rs_manifest_path} --bin {bin} \
             -Zbuild-std=core,alloc,std,panic_abort \
             --target x86_64-unknown-hermit \
-            --release",
-            relative_path, hermit_rs_manifest_path, bin
+            --release"
         ),
         iterations: 1,
         external_time: true,

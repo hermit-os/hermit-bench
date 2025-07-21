@@ -9,6 +9,15 @@ inputs:
   benchmark-file:
     description: 'Path to the benchmark JSON file'
     required: true
+  path-to-repo:
+    description: 'Path to the repository which shall be benchmarked'
+    required: false
+    default: '../../../../kernel/kernel'
+  # This is here to allow the action to be run locally for the CI tests
+  path-to-action:
+    description: 'Path to the action which shall be run'
+    required: false
+    default: '../../_actions/hermit-os/hermit-bench/main'
 
 outputs:
   result-file:
@@ -20,14 +29,14 @@ runs:
   steps:
     - name: Build
       run: |
-        cd ../../_actions/hermit-os/hermit-bench/main
-        ln -s ../../../../kernel/kernel/rust-toolchain.toml rust-toolchain.toml
+        cd ${{ inputs.path-to-action }}
+        ln -s ${{ inputs.path-to-repo }}/rust-toolchain.toml rust-toolchain.toml
         cargo build --package hermit-bench
       shell: bash
     - name: Run benchmarks
       id: run-bench
       run: |
-        cd ../../_actions/hermit-os/hermit-bench/main
-        cargo run ${{ inputs.benchmark-file }} ../../../../kernel/kernel
+        cd ${{ inputs.path-to-action }}
+        cargo run ${{ inputs.benchmark-file }} ${{ inputs.path-to-repo }}
         echo "results-path=results.json" >> $GITHUB_OUTPUT
       shell: bash

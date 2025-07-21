@@ -1,1 +1,4 @@
 /target
+.github/test/target
+.github/test/results.json
+.github/validate/target

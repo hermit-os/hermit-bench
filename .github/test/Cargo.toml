@@ -1,0 +1,12 @@
+[package]
+name = "test_proj"
+authors = ["Carl Wachter"]
+edition = "2021"
+
+[[bin]]
+name = "test1"
+path = "src/test.rs"
+
+[[bin]]
+name = "test2"
+path = "src/test.rs"

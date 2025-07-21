@@ -1,0 +1,28 @@
+- group: Test Group
+  plot_group: Test Plot Group 1
+  name: Test Name 1
+  bin: test1
+  hermit_rs_manifest_path: Cargo.toml
+  command: |
+    sleep 1
+  iterations: 5
+  external_time: true
+
+- group: Test Group
+  name: Test Name 2
+  bin: test2
+  hermit_rs_manifest_path: Cargo.toml
+  command: |
+    echo "/*BENCHMARK OUTPUT*/
+    name: bench_1
+    unit: s
+    value: 10.0
+    plot_group: Test Plot Group 2
+    /*BENCHMARK OUTPUT END*/
+    /*BENCHMARK OUTPUT*/
+    name: bench_2
+    unit: s
+    value: 20.0
+    plot_group: Test Plot Group 2
+    /*BENCHMARK OUTPUT END*/"
+  iterations: 5

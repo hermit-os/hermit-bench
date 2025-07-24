@@ -37,6 +37,6 @@ runs:
       id: run-bench
       run: |
         cd ${{ inputs.path-to-action }}
-        cargo run ${{ inputs.benchmark-file }} ${{ inputs.path-to-repo }}
+        cargo run ${{ inputs.benchmark-file }} ${{ inputs.path-to-repo }} ${{ runner.name }}
         echo "results-path=results.json" >> $GITHUB_OUTPUT
       shell: bash

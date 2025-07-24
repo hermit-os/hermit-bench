@@ -23,6 +23,7 @@ struct BenchmarkResult {
     group: String,
     range: f64,
     plot_group: String,
+    runner_name: String,
 }
 
 // Struct to parse the output of the benchmark, stores all data points in a single vector
@@ -81,15 +82,16 @@ fn main() -> io::Result<()> {
     // Get the input file from the command line arguments.
     let args: Vec<String> = env::args().collect();
 
-    if args.len() < 3 {
+    if args.len() < 4 {
         return Err(io::Error::new(
             io::ErrorKind::InvalidInput,
-            "Usage: <program> <input_file> <relative_path>",
+            "Usage: <program> <input_file> <relative_path> <runner_name>",
         ));
     }
 
     let input_file = &args[1];
     let relative_path = &args[2];
+    let runner_name = &args[3];
 
     // Initialize the results vector.
     let mut results: Vec<BenchmarkResult> = Vec::new();
@@ -160,6 +162,11 @@ fn main() -> io::Result<()> {
             // Add the results to the overall results vector.
             results.extend(benchmark_result);
         }
+    }
+
+    // Add the runner name to each result
+    for result in &mut results {
+        result.runner_name = runner_name.clone();
     }
 
     // Write the results to the output file.
@@ -256,6 +263,7 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
                 group: benchmark.group.clone(),
                 range: 0.0,
                 plot_group: plot_group.clone(),
+                runner_name: "".to_string(),
             };
 
             // Append the result to the corresponding benchmark in the results vector
@@ -293,6 +301,7 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
             group: result.group,
             range: standard_deviation,
             plot_group: result.plot_group,
+            runner_name: "".to_string(),
         };
 
         // Append the result to the results vector
@@ -438,6 +447,7 @@ fn get_size(benchmark: &Benchmark, relative_path: String) -> BenchmarkResult {
         group: "File Size".to_string(),
         range: 0.0,
         plot_group: "none".to_string(),
+        runner_name: "".to_string(),
     }
 }
 
@@ -484,5 +494,6 @@ fn external_time_benchmark(benchmark: &Benchmark, warmup: bool) -> BenchmarkResu
         group: benchmark.group.clone(),
         range: standard_deviation,
         plot_group: benchmark.plot_group.clone(),
+        runner_name: "".to_string(),
     }
 }

@@ -29,6 +29,7 @@ jobs:
       - name: Validate results
         run: |
           cd .github/validate
+          cat ../test/${{ steps.run-action.outputs.result-file }}
           cargo run ../test/${{ steps.run-action.outputs.result-file }}
         shell: bash
 

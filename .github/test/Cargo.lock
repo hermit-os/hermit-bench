@@ -3,5 +3,14 @@
 version = 4
 
 [[package]]
+name = "hermit_bench_output"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4e622f2484751a4f8887e3eab0a6358c1bd66e190c5c54805fdc215c3ea0a871"
+
+[[package]]
 name = "test_proj"
 version = "0.0.0"
+dependencies = [
+ "hermit_bench_output",
+]

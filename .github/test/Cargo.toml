@@ -3,10 +3,13 @@ name = "test_proj"
 authors = ["Carl Wachter"]
 edition = "2021"
 
+[dependencies]
+hermit_bench_output = "0.1.1"
+
 [[bin]]
 name = "test1"
-path = "src/test.rs"
+path = "src/test1.rs"
 
 [[bin]]
 name = "test2"
-path = "src/test.rs"
+path = "src/test2.rs"

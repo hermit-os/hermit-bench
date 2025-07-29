@@ -205,7 +205,7 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
     run_benchmark_command(benchmark);
 
     let mut parse_benchmark_results: Vec<BenchmarkResultRaw> = Vec::new();
-    let format = Regex::new(r"\/\*BENCHMARK OUTPUT\*\/\nname:\s*(.+)\s*unit:\s*(.+)\s*value:\s*([0-9]*\.*[0-9]+)\nplot_group:\s*(.+)\s*\/\*BENCHMARK OUTPUT END\*\/\n").unwrap();
+    let format = Regex::new(r"\/\*BENCHMARK OUTPUT\*\/[\r\n]+name:\s*(.+)[\r\n]+unit:\s*(.+)[\r\n]+value:\s*([0-9]*\.*[0-9]+)[\r\n]+plot_group:\s*(.+)[\r\n]+\/\*BENCHMARK OUTPUT END\*\/[\r\n]").unwrap();
     // Split the output string by the separator, to get the individual sub-benchmarks
     //
     // Example string:

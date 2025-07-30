@@ -102,9 +102,9 @@ fn validate_results(json: &Value) -> Result<(), Box<dyn std::error::Error>> {
                 )
                 .into());
             }
-            if item.get("plot_group") != Some(&Value::from("Test Plot Group 2")) {
+            if item.get("plot_group") != Some(&Value::from("none")) {
                 return Err(format!(
-                    "Item {i} (name: {name}) has incorrect plot_group, expected 'Test Plot Group 2'"
+                    "Item {i} (name: {name}) has incorrect plot_group, expected 'none'"
                 )
                 .into());
             }

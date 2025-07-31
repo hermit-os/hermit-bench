@@ -223,6 +223,10 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
     //  /*BENCHMARK OUTPUT END*/
     // Run the benchmark for the first time to get all the benchmarks
     let mut output_str = run_benchmark_command(benchmark);
+
+    // Remove all remaining instances of \r from the output string
+    output_str = output_str.replace("\r", " ");
+
     for sub_benchmark_caps in format.captures_iter(&output_str) {
         // Check if the sub-benchmark has a plot group, if not, use the benchmark plot group
         let mut plot_group = benchmark.plot_group.clone();

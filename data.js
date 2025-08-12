@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1754481398323,
+  "lastUpdate": 1754990518951,
   "repoUrl": "https://github.com/hermit-os/kernel",
   "entries": {
     "Benchmark": [
@@ -13304,6 +13304,379 @@ window.BENCHMARK_DATA = {
             "value": 0.24,
             "unit": "ns",
             "range": 1.6631151493507597,
+            "group": "Mutex",
+            "plot_group": "Mutex Stress Test Average Time per Iteration",
+            "runner_name": "github-bench-runner-2"
+          },
+          {
+            "name": "2 Threads",
+            "value": 0.28,
+            "unit": "ns",
+            "range": 1.9403010075758864,
+            "group": "Mutex",
+            "plot_group": "Mutex Stress Test Average Time per Iteration",
+            "runner_name": "github-bench-runner-2"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Martin Kröning",
+            "username": "mkroening",
+            "email": "mkroening@posteo.net"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "7521e852516b33bfd292a3d6a4aa9e0f7deb1ddc",
+          "message": "Merge pull request #1865 from hermit-os/dependabot/cargo/clap-4.5.44\n\nbuild(deps): Bump clap from 4.5.41 to 4.5.44",
+          "timestamp": "2025-08-12T08:16:14Z",
+          "url": "https://github.com/hermit-os/kernel/commit/7521e852516b33bfd292a3d6a4aa9e0f7deb1ddc"
+        },
+        "date": 1754990518560,
+        "tool": "hermit-bench",
+        "benches": [
+          {
+            "name": "startup_benchmark Build Time",
+            "value": 88.163735822,
+            "unit": "s",
+            "range": 0,
+            "group": "Build",
+            "plot_group": "none",
+            "runner_name": "github-bench-runner-1"
+          },
+          {
+            "name": "startup_benchmark File Size",
+            "value": 0.8674774169921875,
+            "unit": "MB",
+            "range": 0,
+            "group": "File Size",
+            "plot_group": "none",
+            "runner_name": "github-bench-runner-1"
+          },
+          {
+            "name": "1 core",
+            "value": 0.85275492776,
+            "unit": "s",
+            "range": 0.029685752908671873,
+            "group": "General",
+            "plot_group": "Startup Time",
+            "runner_name": "github-bench-runner-1"
+          },
+          {
+            "name": "2 cores",
+            "value": 0.8769040305999999,
+            "unit": "s",
+            "range": 0.022250124696548985,
+            "group": "General",
+            "plot_group": "Startup Time",
+            "runner_name": "github-bench-runner-1"
+          },
+          {
+            "name": "4 cores",
+            "value": 0.8772155371199999,
+            "unit": "s",
+            "range": 0.030136399400259146,
+            "group": "General",
+            "plot_group": "Startup Time",
+            "runner_name": "github-bench-runner-1"
+          },
+          {
+            "name": "multithreaded_benchmark Build Time",
+            "value": 87.421250823,
+            "unit": "s",
+            "range": 0,
+            "group": "Build",
+            "plot_group": "none",
+            "runner_name": "github-bench-runner-1"
+          },
+          {
+            "name": "multithreaded_benchmark File Size",
+            "value": 0.9744338989257812,
+            "unit": "MB",
+            "range": 0,
+            "group": "File Size",
+            "plot_group": "none",
+            "runner_name": "github-bench-runner-1"
+          },
+          {
+            "name": "2 Threads",
+            "value": 3.3736600149484484,
+            "unit": "%",
+            "range": 16.193568071752555,
+            "group": "General",
+            "plot_group": "Multithreaded Pi Efficiency",
+            "runner_name": "github-bench-runner-1"
+          },
+          {
+            "name": "4 Threads",
+            "value": 1.5691916449981427,
+            "unit": "%",
+            "range": 7.532119895991085,
+            "group": "General",
+            "plot_group": "Multithreaded Pi Efficiency",
+            "runner_name": "github-bench-runner-1"
+          },
+          {
+            "name": "8 Threads",
+            "value": 0.9559982359836134,
+            "unit": "%",
+            "range": 4.588791532721344,
+            "group": "General",
+            "plot_group": "Multithreaded Pi Efficiency",
+            "runner_name": "github-bench-runner-1"
+          },
+          {
+            "name": "micro_benchmarks Build Time",
+            "value": 90.284616971,
+            "unit": "s",
+            "range": 0,
+            "group": "Build",
+            "plot_group": "none",
+            "runner_name": "github-bench-runner-2"
+          },
+          {
+            "name": "micro_benchmarks File Size",
+            "value": 0.9822769165039062,
+            "unit": "MB",
+            "range": 0,
+            "group": "File Size",
+            "plot_group": "none",
+            "runner_name": "github-bench-runner-2"
+          },
+          {
+            "name": "1 thread",
+            "value": 2.1778896800000003,
+            "unit": "ticks",
+            "range": 10.453870464000001,
+            "group": "Micro",
+            "plot_group": "Scheduling time",
+            "runner_name": "github-bench-runner-2"
+          },
+          {
+            "name": "2 threads",
+            "value": 1.18701432,
+            "unit": "ticks",
+            "range": 5.697668736,
+            "group": "Micro",
+            "plot_group": "Scheduling time",
+            "runner_name": "github-bench-runner-2"
+          },
+          {
+            "name": "Time for syscall (getpid)",
+            "value": 0.58976256,
+            "unit": "ticks",
+            "range": 2.830860288,
+            "group": "Micro",
+            "plot_group": "none",
+            "runner_name": "github-bench-runner-2"
+          },
+          {
+            "name": "(built_in) block size 4096",
+            "value": 1838.235294117647,
+            "unit": "MByte/s",
+            "range": 8823.529411764704,
+            "group": "Micro",
+            "plot_group": "Memcpy speed",
+            "runner_name": "github-bench-runner-2"
+          },
+          {
+            "name": "(built_in) block size 1048576",
+            "value": 829.6861712057414,
+            "unit": "MByte/s",
+            "range": 3982.4936217875593,
+            "group": "Micro",
+            "plot_group": "Memcpy speed",
+            "runner_name": "github-bench-runner-2"
+          },
+          {
+            "name": "(built_in) block size 16777216",
+            "value": 238.90197665255775,
+            "unit": "MByte/s",
+            "range": 1146.7294879322772,
+            "group": "Micro",
+            "plot_group": "Memcpy speed",
+            "runner_name": "github-bench-runner-2"
+          },
+          {
+            "name": "(built_in) block size 4096",
+            "value": 1875,
+            "unit": "MByte/s",
+            "range": 9000,
+            "group": "Micro",
+            "plot_group": "Memset speed",
+            "runner_name": "github-bench-runner-2"
+          },
+          {
+            "name": "(built_in) block size 1048576",
+            "value": 1029.230135858378,
+            "unit": "MByte/s",
+            "range": 4940.304652120214,
+            "group": "Micro",
+            "plot_group": "Memset speed",
+            "runner_name": "github-bench-runner-2"
+          },
+          {
+            "name": "(built_in) block size 16777216",
+            "value": 1010.8827849820727,
+            "unit": "MByte/s",
+            "range": 4852.237367913949,
+            "group": "Micro",
+            "plot_group": "Memset speed",
+            "runner_name": "github-bench-runner-2"
+          },
+          {
+            "name": "(rust) block size 4096",
+            "value": 1428.5714285714287,
+            "unit": "MByte/s",
+            "range": 6857.142857142858,
+            "group": "Micro",
+            "plot_group": "Memcpy speed",
+            "runner_name": "github-bench-runner-2"
+          },
+          {
+            "name": "(rust) block size 1048576",
+            "value": 802.294562448603,
+            "unit": "MByte/s",
+            "range": 3851.0138997532945,
+            "group": "Micro",
+            "plot_group": "Memcpy speed",
+            "runner_name": "github-bench-runner-2"
+          },
+          {
+            "name": "(rust) block size 16777216",
+            "value": 238.4345283001295,
+            "unit": "MByte/s",
+            "range": 1144.4857358406216,
+            "group": "Micro",
+            "plot_group": "Memcpy speed",
+            "runner_name": "github-bench-runner-2"
+          },
+          {
+            "name": "(rust) block size 4096",
+            "value": 1875,
+            "unit": "MByte/s",
+            "range": 9000,
+            "group": "Micro",
+            "plot_group": "Memset speed",
+            "runner_name": "github-bench-runner-2"
+          },
+          {
+            "name": "(rust) block size 1048576",
+            "value": 1029.7865767319722,
+            "unit": "MByte/s",
+            "range": 4942.975568313466,
+            "group": "Micro",
+            "plot_group": "Memset speed",
+            "runner_name": "github-bench-runner-2"
+          },
+          {
+            "name": "(rust) block size 16777216",
+            "value": 1028.1421792116078,
+            "unit": "MByte/s",
+            "range": 4935.082460215717,
+            "group": "Micro",
+            "plot_group": "Memset speed",
+            "runner_name": "github-bench-runner-2"
+          },
+          {
+            "name": "alloc_benchmarks Build Time",
+            "value": 86.182616359,
+            "unit": "s",
+            "range": 0,
+            "group": "Build",
+            "plot_group": "none",
+            "runner_name": "github-bench-runner-2"
+          },
+          {
+            "name": "alloc_benchmarks File Size",
+            "value": 0.9362869262695312,
+            "unit": "MB",
+            "range": 0,
+            "group": "File Size",
+            "plot_group": "none",
+            "runner_name": "github-bench-runner-2"
+          },
+          {
+            "name": "Allocation success",
+            "value": 2,
+            "unit": "%",
+            "range": 13.859292911256333,
+            "group": "Allocations",
+            "plot_group": "none",
+            "runner_name": "github-bench-runner-2"
+          },
+          {
+            "name": "Deallocation success",
+            "value": 1.4160109851067304,
+            "unit": "%",
+            "range": 9.812455504075404,
+            "group": "Allocations",
+            "plot_group": "none",
+            "runner_name": "github-bench-runner-2"
+          },
+          {
+            "name": "Pre-fail Allocations",
+            "value": 2,
+            "unit": "%",
+            "range": 13.859292911256333,
+            "group": "Allocations",
+            "plot_group": "none",
+            "runner_name": "github-bench-runner-2"
+          },
+          {
+            "name": "Average Allocation time",
+            "value": 243.28373163307438,
+            "unit": "Ticks",
+            "range": 1685.8702486231277,
+            "group": "Allocations",
+            "plot_group": "none",
+            "runner_name": "github-bench-runner-2"
+          },
+          {
+            "name": "Average Allocation time (no fail)",
+            "value": 243.28373163307438,
+            "unit": "Ticks",
+            "range": 1685.8702486231277,
+            "group": "Allocations",
+            "plot_group": "none",
+            "runner_name": "github-bench-runner-2"
+          },
+          {
+            "name": "Average Deallocation time",
+            "value": 14.730525522022884,
+            "unit": "Ticks",
+            "range": 102.07733397322612,
+            "group": "Allocations",
+            "plot_group": "none",
+            "runner_name": "github-bench-runner-2"
+          },
+          {
+            "name": "mutex_benchmark Build Time",
+            "value": 86.017336467,
+            "unit": "s",
+            "range": 0,
+            "group": "Build",
+            "plot_group": "none",
+            "runner_name": "github-bench-runner-2"
+          },
+          {
+            "name": "mutex_benchmark File Size",
+            "value": 0.98175048828125,
+            "unit": "MB",
+            "range": 0,
+            "group": "File Size",
+            "plot_group": "none",
+            "runner_name": "github-bench-runner-2"
+          },
+          {
+            "name": "1 Threads",
+            "value": 0.26,
+            "unit": "ns",
+            "range": 1.8017080784633233,
             "group": "Mutex",
             "plot_group": "Mutex Stress Test Average Time per Iteration",
             "runner_name": "github-bench-runner-2"

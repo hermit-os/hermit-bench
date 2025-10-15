@@ -272,12 +272,18 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
 
             // Append the result to the corresponding benchmark in the results vector
             for result in &mut parse_benchmark_results {
-                if result.name == sub_benchmark_caps[1] {
+                if result.name == sub_benchmark_caps[1].trim() {
                     result.value.push(benchmark_result.value);
                 }
             }
         }
     }
+
+    assert_eq!(
+        parse_benchmark_results[0].value.len(),
+        benchmark.iterations as usize,
+        "Number of benchmark results doesn't match iteration count"
+    );
 
     // Convert the raw benchmark results to BenchmarkResult structs
     let mut processed_benchmark_results: Vec<BenchmarkResult> = Vec::new();

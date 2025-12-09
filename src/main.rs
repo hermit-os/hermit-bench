@@ -247,8 +247,8 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
         parse_benchmark_results.push(benchmark_result);
     }
 
-    // Run the benchmark the specified number of times. Subtract one, since we already ran the benchmark once.
-    for _ in 0..benchmark.iterations - 1 {
+    // Run the benchmark the specified number of times. Start at one, since we already ran the benchmark once.
+    for _ in 1..benchmark.iterations {
         // Run the benchmark command and return the result.
         output_str = run_benchmark_command(benchmark);
 

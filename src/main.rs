@@ -195,10 +195,7 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
         run_pre_run_command(benchmark);
     }
 
-    println!(
-        "Running benchmark {0}: {1}",
-        benchmark.name, benchmark.command
-    );
+    println!("Running benchmark {}", benchmark.name);
 
     // Run unlogged benchmark, to warm up the system
     run_benchmark_command("warmup0", benchmark);
@@ -328,6 +325,7 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
 
 fn run_benchmark_command(group: &str, benchmark: &Benchmark) -> String {
     eprintln!("::group::{group}");
+    eprintln!("$ {}", benchmark.command);
     let mut child = Command::new("nice")
         .arg("-n0")
         .arg("sh")

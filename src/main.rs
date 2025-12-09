@@ -201,8 +201,8 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
     );
 
     // Run unlogged benchmark, to warm up the system
-    run_benchmark_command(benchmark);
-    run_benchmark_command(benchmark);
+    run_benchmark_command("warmup0", benchmark);
+    run_benchmark_command("warmup1", benchmark);
 
     let mut parse_benchmark_results: Vec<BenchmarkResultRaw> = Vec::new();
     let format = Regex::new(r"\/\*BENCHMARK OUTPUT\*\/\s*name:\s*(.+)\s*unit:\s*(.+)\s*value:\s*([0-9]*\.*[0-9]+)\s*plot_group:\s*(.+)\s*\/\*BENCHMARK OUTPUT END\*\/\s*").unwrap();
@@ -222,7 +222,7 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
     //  plot_group:
     //  /*BENCHMARK OUTPUT END*/
     // Run the benchmark for the first time to get all the benchmarks
-    let mut output_str = run_benchmark_command(benchmark);
+    let mut output_str = run_benchmark_command("benchmark0", benchmark);
 
     // Remove all remaining instances of \r from the output string
     output_str = output_str.replace("\r", "");
@@ -248,9 +248,9 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
     }
 
     // Run the benchmark the specified number of times. Start at one, since we already ran the benchmark once.
-    for _ in 1..benchmark.iterations {
+    for i in 1..benchmark.iterations {
         // Run the benchmark command and return the result.
-        output_str = run_benchmark_command(benchmark);
+        output_str = run_benchmark_command(&format!("benchmark{i}"), benchmark);
 
         for sub_benchmark_caps in format.captures_iter(&output_str) {
             // Check if the sub-benchmark has a plot group, if not, use the benchmark plot group
@@ -326,7 +326,8 @@ fn run_benchmark(benchmark: &Benchmark) -> Vec<BenchmarkResult> {
     processed_benchmark_results
 }
 
-fn run_benchmark_command(benchmark: &Benchmark) -> String {
+fn run_benchmark_command(group: &str, benchmark: &Benchmark) -> String {
+    eprintln!("::group::{group}");
     let mut child = Command::new("nice")
         .arg("-n0")
         .arg("sh")
@@ -352,11 +353,12 @@ fn run_benchmark_command(benchmark: &Benchmark) -> String {
         .map(Result::unwrap)
         .unwrap_or_default();
 
+    eprintln!("stdout:\n{stdout}");
+    eprintln!("stderr:\n{stderr}");
+
     let Some(status) = status else {
         // The timeout elapsed
         child.kill().unwrap();
-
-        eprintln!("Command failed with output: \n{stdout}\nAnd error: \n{stderr}");
         panic!("Command timed out");
     };
 
@@ -364,10 +366,11 @@ fn run_benchmark_command(benchmark: &Benchmark) -> String {
     // Exit code 3 means success on QEMU's isa-debug-exit device on x86-64.
     // Also disregard the error code 137, which parallel loves to throw
     if !status.success() && !matches!(status.code().unwrap(), 3 | 137) {
-        eprintln!("Command failed with output: \n{stdout}\nAnd error: \n{stderr}");
         eprintln!("Exit code: {}", status.code().unwrap());
         panic!("Command failed");
     }
+
+    eprintln!("::endgroup::");
     stdout
 }
 
@@ -464,18 +467,18 @@ fn external_time_benchmark(benchmark: &Benchmark, warmup: bool) -> BenchmarkResu
 
     // Run the benchmark once to warm up the system
     if warmup {
-        run_benchmark_command(benchmark);
-        run_benchmark_command(benchmark);
+        run_benchmark_command("warmup0", benchmark);
+        run_benchmark_command("warmup1", benchmark);
     }
 
     let mut average_time = 0.0;
     let mut times: Vec<f64> = Vec::new();
 
     // Run the benchmark the specified number of times.
-    for _ in 0..benchmark.iterations {
+    for i in 0..benchmark.iterations {
         // Run the benchmark with the external time command
         let now = Instant::now();
-        run_benchmark_command(benchmark);
+        run_benchmark_command(&format!("benchmark{i}"), benchmark);
         let elapsed_time = now.elapsed();
 
         // Add the elapsed time to the average time

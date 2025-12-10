@@ -346,8 +346,9 @@ fn run_benchmark_command(benchmark: &Benchmark) -> String {
             }
 
             // If the command failed, print the output and error
+            // Exit code 3 means success on QEMU's isa-debug-exit device on x86-64.
             // Also disregard the error code 137, which parallel loves to throw
-            if !status.success() && status.code().unwrap() != 137 {
+            if !status.success() && !matches!(status.code().unwrap(), 3 | 137) {
                 let mut stderr = String::new();
                 if let Some(mut stderr_handle) = child.stderr.take() {
                     std::io::Read::read_to_string(&mut stderr_handle, &mut stderr).unwrap();
